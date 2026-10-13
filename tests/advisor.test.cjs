@@ -1,0 +1,119 @@
+const { test } = require("node:test");
+const assert = require("node:assert/strict");
+const Advisor = require("../extension/advisor.js");
+const normal = {
+  stats: {
+    hp: 50,
+    hpMax: 60,
+    mp: 5,
+    mpMax: 10,
+    ac: 8,
+    ev: 10,
+    sh: 4,
+    xl: 9,
+    status: [],
+  },
+  monsters: [{ att: 0, count: 1 }],
+  items: [],
+  spells: [],
+};
+const monster = { att: 0, threat: 1, distance: 2, avgHp: 18 };
+test("low health and groups escalate source threat while friendly monsters are excluded", () => {
+  assert.equal(Advisor.advise(normal, monster).risk, 1);
+  const low = {
+    ...normal,
+    stats: { ...normal.stats, hp: 8 },
+    monsters: [{ att: 0, count: 3 }],
+  };
+  assert.equal(Advisor.advise(low, monster).risk, 3);
+  assert.equal(
+    Advisor.advise(low, { ...monster, att: 4 }).candidates.length,
+    0,
+  );
+  assert.equal(Advisor.advise(low, { ...monster, att: 4 }).label, "우호");
+});
+test("spell candidates require known failure, sufficient MP and no known immunity", () => {
+  const spells = [
+    { id: "fire", name: "Fireball", fail: 5, level: 5 },
+    { id: "cold", name: "Freeze", fail: 2, level: 1 },
+    { id: "cost", name: "Shatter", fail: 1, level: 9 },
+    { id: "fail", name: "Magic Dart", fail: 60, level: 1 },
+    { id: "unknown", name: "Unknown", fail: null, level: 1 },
+  ];
+  const result = Advisor.advise(
+    { ...normal, spells },
+    { ...monster, resists: { cold: 3, fire: -1 } },
+  );
+  assert.deepEqual(
+    result.candidates.map((c) => c.id),
+    ["fire"],
+  );
+  assert.match(result.candidates[0].reason, /약점/);
+});
+test("empty wands, unidentified potions and resisted poison are not promoted as effective", () => {
+  const items = [
+    { slot: 52, name: "a ruby potion", category: "potion", action: "Drink" },
+    {
+      slot: 3,
+      name: "poisoned darts",
+      category: "missile",
+      action: "Activate",
+    },
+    {
+      slot: 60,
+      name: "a wand of flame",
+      category: "evoke",
+      action: "Zap",
+      charges: 0,
+    },
+    {
+      slot: 61,
+      name: "a potion of heal wounds",
+      category: "potion",
+      action: "Drink",
+    },
+  ];
+  const result = Advisor.advise(
+    { ...normal, stats: { ...normal.stats, hp: 10 }, items },
+    { ...monster, resists: { poison: 3 } },
+  );
+  assert.deepEqual(
+    result.candidates.map((c) => c.slot),
+    [61],
+  );
+  assert.equal(result.candidates[0].role, "회복");
+});
+test("skill snapshots parse English and Korean levels and influence available candidates", () => {
+  const skills = Advisor.skillLevels([
+    "a + Fighting       4.5  20%",
+    "b - 투척           3.2   0%",
+    "발동술 5.0",
+    "c * Evocations 7.1",
+  ]);
+  assert.equal(skills.throwing, 3.2);
+  assert.equal(skills.fighting, 4.5);
+  assert.equal(skills.evocations, 7.1);
+  const items = [
+    { slot: 1, name: "javelins", category: "missile", action: "Activate" },
+    {
+      slot: 2,
+      name: "wand of flame",
+      category: "evoke",
+      action: "Zap",
+      charges: 3,
+    },
+  ];
+  const result = Advisor.advise(
+    { ...normal, skills, skillsLoaded: true, items },
+    monster,
+  );
+  assert.equal(result.candidates[0].slot, 2);
+  assert.match(result.candidates[0].reason, /7.1/);
+});
+test("resistance parser reads only explicit game symbols and never guesses zero", () => {
+  assert.deepEqual(
+    Advisor.resistances("rF: +..  rC: x..  rPois: ∞  rElec: +"),
+    { fire: 1, cold: -1, poison: 3, electricity: 1 },
+  );
+  assert.deepEqual(Advisor.resistances("Untranslated monster description"), {});
+});

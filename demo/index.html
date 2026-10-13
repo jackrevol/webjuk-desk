@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>웹죽 데스크 · 연동 데모</title>
+    <link rel="stylesheet" href="/extension/page.css" />
+    <link rel="stylesheet" href="/demo/demo.css" />
+  </head>
+  <body>
+    <main id="game">
+      <div class="demo-label">
+        <span class="sigil">◈</span
+        ><span>WEBJUK DESK <small>INTERACTIVE PREVIEW</small></span
+        ><span class="demo-tag">테스트 데이터 · 실제 게임 아님</span>
+      </div>
+      <div class="game-layout">
+        <section class="dungeon-wrap">
+          <div class="room-label">
+            <span>Dungeon : 7</span><span>DEEP ELF CONJURER</span>
+          </div>
+          <canvas id="dungeon" width="800" height="560"></canvas>
+          <div class="message-pane" id="messages">
+            <div>Welcome back, adventurer.</div>
+            <div>The dungeon waits. Choose a spell from your desk.</div>
+            <div class="latest">
+              마법이나 아이템을 선택하면 여기에서 입력 결과를 확인할 수
+              있습니다.
+            </div>
+          </div>
+        </section>
+        <aside class="game-stats" id="right_column">
+          <h1>Adventurer</h1>
+          <p>Deep Elf Conjurer</p>
+          <div>HP <b>52 / 64</b></div>
+          <div>Magic <b>24 / 32</b></div>
+          <hr />
+          <div>AC <b>8</b></div>
+          <div>EV <b>14</b></div>
+          <div>SH <b>0</b></div>
+          <div>XL <b>12</b></div>
+          <hr />
+          <p>Vehumet *****.</p>
+          <p>+2 short sword</p>
+          <div class="mini-map" aria-label="데모 미니맵"></div>
+          <div class="demo-controls">
+            <button id="simulate-change">소지품 변경 테스트</button
+            ><button id="simulate-watch">관전 모드 전환</button
+            ><button id="simulate-disconnect">연결 끊기·복구</button>
+          </div>
+        </aside>
+      </div>
+      <div class="demo-info">
+        <span>마법 · 인벤토리 · 빠른 슬롯</span>
+        <p>옆 패널의 ☆로 등록하고 <kbd>Alt 1–6</kbd>으로 사용해 보세요.</p>
+      </div>
+      <div id="ui-stack"></div>
+    </main>
+    <script src="/demo/fixture.js"></script>
+    <script src="/extension/core.js"></script>
+    <script src="/extension/advisor.js"></script>
+    <script src="/extension/bridge.js"></script>
+    <script src="/extension/content.js"></script>
+  </body>
+</html>

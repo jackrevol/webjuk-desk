@@ -1,0 +1,271 @@
+:host {
+  all: initial;
+  display: block;
+  color: var(--color-7, #bbb);
+  font: 12px/1.35 var(--stat-font, monospace);
+  color-scheme: dark;
+  --border: var(--color-8, #555);
+  --active: var(--color-14, #ff0);
+}
+* {
+  box-sizing: border-box;
+}
+[hidden] {
+  display: none !important;
+}
+button,
+input {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  color: inherit;
+  background: #111;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  padding: 2px 4px;
+}
+button:hover {
+  color: var(--active);
+  border-color: var(--active);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 1px solid var(--active);
+  outline-offset: 1px;
+}
+.native-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  max-height: var(--panel-height, 180px);
+  display: flex;
+  flex-direction: column;
+  margin-top: 3px;
+  background: #080808;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.tabs {
+  display: flex;
+  gap: 1px;
+  align-items: stretch;
+  padding: 1px;
+  flex-shrink: 0;
+  min-height: 23px;
+}
+.tabs > [role="tab"] {
+  padding: 1px 5px;
+  font-size: 11px;
+  background: #111;
+  border-color: #333;
+}
+.tabs > [aria-selected="true"] {
+  color: var(--active);
+  border-color: var(--color-6, #a50);
+}
+.tab-spacer {
+  flex: 1;
+  min-width: 0;
+}
+.tool {
+  min-width: 20px;
+  font-size: 13px;
+  padding: 0 3px;
+  border-color: #333;
+}
+.body,
+#panel-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(35px, 1fr));
+  gap: 1px;
+  padding: 2px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #111;
+  min-height: 0;
+  align-content: start;
+}
+.cell {
+  position: relative;
+  height: 36px;
+  border: 1px solid #38352c;
+  background: #14130f;
+  min-width: 0;
+}
+.cell:hover {
+  border-color: var(--active);
+}
+.cell.equipped {
+  border-color: var(--color-2, #080);
+  background: #142014;
+}
+.cell.useless .tile {
+  opacity: 0.45;
+}
+.tile-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.tile-button[aria-disabled="true"] {
+  opacity: 0.55;
+}
+.tile {
+  width: 32px;
+  height: 32px;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+.fallback {
+  display: grid;
+  place-items: center;
+  font: bold 27px monospace;
+  color: #bba974;
+}
+.fallback.spell {
+  color: var(--color-13, #f8f);
+}
+.fallback.missile {
+  color: #aaa;
+}
+.fallback.potion {
+  color: var(--color-12, #f88);
+}
+.fallback.scroll {
+  color: var(--active);
+}
+.fallback.evoke {
+  color: var(--color-11, #8ff);
+}
+.letter {
+  position: absolute;
+  left: 0;
+  top: 0;
+  text-shadow:
+    1px 1px #000,
+    -1px -1px #000;
+  font: 8px monospace;
+  pointer-events: none;
+}
+.quantity {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  color: var(--color-15, #fff);
+  font: bold 10px monospace;
+  text-shadow:
+    1px 1px #000,
+    -1px -1px #000;
+  pointer-events: none;
+}
+.pin {
+  position: absolute;
+  right: 0;
+  top: 0;
+  visibility: hidden;
+  line-height: 10px;
+  font-size: 10px;
+  border: 0;
+  background: #000c;
+  padding: 0 1px;
+  color: #bbb;
+}
+.cell:hover .pin,
+.cell:focus-within .pin,
+.pin.pinned {
+  visibility: visible;
+}
+.pin.pinned {
+  color: var(--active);
+}
+.quick-slots {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #333;
+}
+.quick-slot {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: #17140b;
+  border-color: var(--color-6, #a50);
+}
+.quick-slot kbd {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font: 8px monospace;
+  background: #000a;
+  color: var(--active);
+}
+.unavailable {
+  opacity: 0.4;
+}
+.quick-slot .tile {
+  width: 28px;
+  height: 28px;
+}
+.empty {
+  grid-column: 1/-1;
+  min-height: 0;
+  padding: 1px;
+}
+.text-button {
+  font-size: 10px;
+  color: var(--active);
+  padding: 2px 4px;
+  background: #14120b;
+  border-color: var(--color-6, #a50);
+}
+.settings {
+  overflow: auto;
+  padding: 4px;
+  font-size: 10px;
+  min-height: 0;
+}
+.settings label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  border-bottom: 1px solid #333;
+  gap: 4px;
+}
+.settings input {
+  accent-color: #aa0;
+}
+.slot-settings {
+  display: grid;
+  gap: 2px;
+  margin: 4px 0;
+}
+.slot-settings button {
+  text-align: left;
+  font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

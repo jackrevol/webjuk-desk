@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "웹죽 데스크 · WebJuk Desk",
+  "version": "0.1.0",
+  "description": "네멜렉스 웹죽의 마법과 인벤토리를 한눈에. 실시간 소지품, 마법 패널, 빠른 슬롯과 집중 화면.",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": { "default_popup": "popup.html", "default_title": "웹죽 데스크" },
+  "content_scripts": [
+    {
+      "matches": ["https://crawl.nemelex.cards/*"],
+      "js": ["core.js", "advisor.js", "bridge.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://crawl.nemelex.cards/*"],
+      "js": ["core.js", "advisor.js", "content.js"],
+      "css": ["page.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    { "resources": ["ui.css"], "matches": ["https://crawl.nemelex.cards/*"] }
+  ]
+}
