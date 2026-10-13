@@ -402,7 +402,7 @@
       return;
     adviceSignature = signature;
     list
-      .querySelectorAll(".webjuk-monster-advice")
+      .querySelectorAll(".webjuk-monster-advice, .webjuk-monster-health")
       .forEach((node) => node.remove());
     if (!prefs.enabled || !Advisor) return;
     for (const mon of state.monsters || []) {
@@ -410,6 +410,19 @@
       if (!row) continue;
       const report = Advisor.advise(state, mon),
         box = el("span", "webjuk-monster-advice");
+      const health = Advisor.healthSummary(mon),
+        hp = el("span", "webjuk-monster-health");
+      hp.title = health.title;
+      hp.tabIndex = 0;
+      hp.setAttribute(
+        "aria-label",
+        `${mon.name}: 남은 체력 ${health.percent}, 종별 평균 HP ${health.avg ?? "미확인"}`,
+      );
+      hp.append(
+        el("span", "", `HP ${health.percent}`),
+        el("span", "webjuk-average-hp", `평균 ${health.avg ?? "?"}`),
+      );
+      row.append(hp);
       const badge = el("span", `webjuk-risk risk-${report.risk}`, report.label);
       badge.tabIndex = 0;
       badge.title = `위험도 추정\n${report.reasons.join("\n")}\n저항·기술·실패율은 마지막 조회 기준입니다.`;

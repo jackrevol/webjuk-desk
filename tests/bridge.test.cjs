@@ -63,6 +63,31 @@ function harness() {
               client: { in_game: () => playing, is_watching: () => watching },
               "game-test/game": {},
               "game-test/player": player,
+              "game-test/monster_list": {
+                get: () => [
+                  {
+                    monsters: [
+                      {
+                        mon: { id: 1, name: "Adder", typedata: { avghp: 11 } },
+                        loc: { x: 1, y: 1 },
+                      },
+                    ],
+                  },
+                ],
+              },
+              "game-test/map_knowledge": {
+                get: () => ({
+                  t: {
+                    fg: {
+                      MDAM_LIGHT: false,
+                      MDAM_MOD: false,
+                      MDAM_HEAVY: true,
+                      MDAM_SEV: false,
+                      MDAM_ADEAD: false,
+                    },
+                  },
+                }),
+              },
             },
           },
         },
@@ -161,6 +186,10 @@ test("uses global game API and inventory slots over 51 without replacing native 
   const h = harness();
   assert.equal(h.lastState().ready, true);
   assert.equal(h.lastState().items[0].slot, 52);
+  assert.deepEqual(
+    Array.from(h.lastState().monsters[0].healthBands[0]),
+    [40, 60],
+  );
   h.act({ type: "describe", slot: 52, name: "a potion" });
   assert.deepEqual(h.sent, [{ type: "inv_item_describe", slot: 52 }]);
   h.receive({ msg: "player", inv: { 52: { quantity: 0 } } });

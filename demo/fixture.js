@@ -309,6 +309,19 @@
     ],
   };
   window.requirejs = { s: { contexts: { _: { defined: modules } } } };
+  modules["game-demo/map_knowledge"] = {
+    get: (x) => ({
+      t: {
+        fg: {
+          MDAM_LIGHT: false,
+          MDAM_MOD: false,
+          MDAM_HEAVY: x === 2,
+          MDAM_SEV: false,
+          MDAM_ADEAD: false,
+        },
+      },
+    }),
+  };
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape") comm.send_message("key", { keycode: 27 });
   });

@@ -38,6 +38,23 @@ html.webjuk-enabled #monster_list > .group > .name {
   overflow: hidden;
   font: 10px/1.2 var(--lbl-font, monospace);
 }
+.webjuk-monster-health {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  max-width: 84px;
+  margin: 0 3px;
+  color: var(--color-7, #bbb);
+  font: 10px/1.2 var(--lbl-font, monospace);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: help;
+}
+.webjuk-average-hp {
+  color: #888;
+  font-size: 9px;
+}
 .webjuk-risk {
   padding: 2px 3px;
   border: 1px solid #555;

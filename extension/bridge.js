@@ -47,6 +47,7 @@
       main: all[`${prefix}tileinfo-main`],
       util: all[`${prefix}util`],
       monsterList: all[`${prefix}monster_list`],
+      mapKnowledge: all[`${prefix}map_knowledge`],
     };
   }
   function monsterSnapshot(m) {
@@ -71,6 +72,10 @@
           att: mon.att,
           threat: mon.threat,
           avgHp: mon.typedata?.avghp,
+          healthBands: entries.map((entry) => {
+            const fg = m.mapKnowledge?.get?.(entry.loc.x, entry.loc.y)?.t?.fg;
+            return Advisor.healthBand(fg);
+          }),
           distance,
           resists: monsterDetails.get(mon.id)?.resists || {},
         },

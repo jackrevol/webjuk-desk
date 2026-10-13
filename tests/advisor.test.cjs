@@ -18,6 +18,56 @@ const normal = {
   spells: [],
 };
 const monster = { att: 0, threat: 1, distance: 2, avgHp: 18 };
+test("visible injury flags map to original HP percentage bands, never exact HP", () => {
+  const names = [
+    "MDAM_ADEAD",
+    "MDAM_SEV",
+    "MDAM_HEAVY",
+    "MDAM_MOD",
+    "MDAM_LIGHT",
+  ];
+  const flags = Object.fromEntries(names.map((key) => [key, false]));
+  assert.deepEqual(Advisor.healthBand(flags), [100, 100]);
+  names.forEach((key, index) =>
+    assert.deepEqual(Advisor.healthBand({ ...flags, [key]: true }), [
+      index * 20,
+      (index + 1) * 20,
+    ]),
+  );
+  assert.equal(Advisor.healthBand(null), null);
+  assert.equal(Advisor.healthBand([6723, 0]), null);
+  const report = Advisor.healthSummary({
+    count: 1,
+    healthBands: [[40, 60]],
+    avgHp: 18,
+  });
+  assert.equal(report.percent, "40–60%");
+  assert.equal(report.avg, 18);
+  assert.match(report.title, /실제 최대 HP 아님/);
+  assert.equal(
+    Advisor.healthSummary({ count: 1, healthBands: [null] }).percent,
+    "?",
+  );
+});
+test("group health encloses individual injury bands without summing average HP", () => {
+  const report = Advisor.healthSummary({
+    count: 2,
+    healthBands: [
+      [0, 20],
+      [80, 100],
+    ],
+    avgHp: 18,
+  });
+  assert.equal(report.percent, "0–100%");
+  assert.equal(report.avg, 18);
+  assert.match(report.title, /합산 HP가 아닙니다/);
+  assert.equal(
+    Advisor.healthSummary({ count: 2, healthBands: [[100, 100], null] })
+      .percent,
+    "?",
+  );
+  assert.equal(Advisor.healthSummary({ count: 0 }).percent, "?");
+});
 test("low health and groups escalate source threat while friendly monsters are excluded", () => {
   assert.equal(Advisor.advise(normal, monster).risk, 1);
   const low = {

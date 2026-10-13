@@ -6,6 +6,52 @@
 })(globalThis, function () {
   "use strict";
   const labels = ["낮음", "보통", "위험", "매우 위험"];
+  // Original mons_get_damage_level thresholds. No exact HP is transmitted.
+  function healthBand(fg) {
+    const flags = [
+      "MDAM_ADEAD",
+      "MDAM_SEV",
+      "MDAM_HEAVY",
+      "MDAM_MOD",
+      "MDAM_LIGHT",
+    ];
+    if (!fg || !flags.every((key) => typeof fg[key] === "boolean")) return null;
+    const index = flags.findIndex((key) => fg[key]);
+    return index < 0 ? [100, 100] : [index * 20, (index + 1) * 20];
+  }
+  function healthSummary(monster) {
+    const bands = monster.healthBands || [];
+    const known =
+      bands.length > 0 &&
+      bands.length === monster.count &&
+      bands.every(
+        (band) =>
+          Array.isArray(band) &&
+          band.length === 2 &&
+          band.every(Number.isFinite),
+      );
+    const low = known ? Math.min(...bands.map((band) => band[0])) : null;
+    const high = known ? Math.max(...bands.map((band) => band[1])) : null;
+    const percent =
+      low == null ? "?" : low === 100 ? "100%" : `${low}–${high}%`;
+    const avg =
+      Number.isFinite(monster.avgHp) && monster.avgHp > 0
+        ? monster.avgHp
+        : null;
+    const detail = known
+      ? bands
+          .map(
+            ([low, high], i) =>
+              `${bands.length > 1 ? `${i + 1}번: ` : ""}${low === 100 ? "부상 없음 (100%)" : `남은 체력 ${low}% 초과·${high}% ${high === 100 ? "미만" : "이하"}`}`,
+          )
+          .join("\n")
+      : "남은 체력 정보 미확인";
+    return {
+      percent,
+      avg,
+      title: `${detail}\n${avg == null ? "종별 평균 HP 미확인" : `종별 평균 HP ${avg} (실제 최대 HP 아님)`}\n정확한 현재 HP는 서버에서 제공하지 않습니다.${bands.length > 1 ? "\n범위는 그룹 내 개별 몬스터의 부상 단계를 포괄하며 합산 HP가 아닙니다." : ""}`,
+    };
+  }
   function skillLevels(lines) {
     const aliases = {
       throwing: "Throwing|투척술|투척",
@@ -276,5 +322,12 @@
       candidates: candidates.slice(0, 5),
     };
   }
-  return { advise, skillLevels, resistances, element };
+  return {
+    advise,
+    skillLevels,
+    resistances,
+    element,
+    healthBand,
+    healthSummary,
+  };
 });
