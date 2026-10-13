@@ -14,6 +14,7 @@ html.webjuk-focus #chat {
 }
 html.webjuk-enabled #monster_list > .group {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   width: 100%;
   max-width: 100%;
@@ -37,6 +38,19 @@ html.webjuk-enabled #monster_list > .group > .name {
   max-width: 90px;
   overflow: hidden;
   font: 10px/1.2 var(--lbl-font, monospace);
+}
+.webjuk-monster-actions {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 0 100%;
+  min-width: 0;
+  max-width: 100%;
+  max-height: 104px;
+  gap: 2px;
+  padding: 2px 0 3px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
 }
 .webjuk-monster-health {
   display: inline-flex;
@@ -84,7 +98,10 @@ html.webjuk-enabled #monster_list > .group > .name {
   border: 1px solid #444;
   background: #111;
   color: var(--color-7, #bbb);
-  font: 9px/1.1 var(--lbl-font, monospace);
+  font: 10px/1.1 var(--lbl-font, monospace);
+  width: 30px;
+  height: 30px;
+  justify-content: center;
   cursor: pointer;
 }
 .webjuk-candidate:hover {
@@ -96,8 +113,9 @@ html.webjuk-enabled #monster_list > .group > .name {
 }
 .webjuk-candidate img,
 .webjuk-candidate .tile {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
   image-rendering: pixelated;
 }
 .webjuk-candidate .fallback {
@@ -105,12 +123,6 @@ html.webjuk-enabled #monster_list > .group > .name {
   place-items: center;
   color: #ddc;
   font: 18px monospace;
-}
-.webjuk-candidate-label {
-  max-width: 45px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .webjuk-no-candidate {
   font-size: 9px;

@@ -15,6 +15,7 @@
       spells: "Alt+KeyM",
       missiles: "Alt+KeyT",
       evokes: "Alt+KeyE",
+      faith: "Alt+KeyG",
       toggle: "Alt+Backquote",
     },
   });
@@ -68,6 +69,7 @@
           action: plain(item.action_verb),
           category: category(item),
           baseType: item.base_type,
+          subType: item.sub_type,
           useless: !!item.useless,
           tile: item.tile,
           equipped:
@@ -105,6 +107,8 @@
           tiles: item.tiles,
           view: powerView ? "power" : "failure",
           power: powerView ? columns[1] : null,
+          damage: powerView ? columns[2] : null,
+          range: powerView ? columns[3] : null,
           fail: powerView ? null : (text.match(/(\d+)%/)?.[1] ?? null),
           level: powerView
             ? null
@@ -189,11 +193,39 @@
               spell.view === "failure"
                 ? (previous?.power ?? null)
                 : spell.power,
+            damage:
+              spell.view === "failure"
+                ? (previous?.damage ?? null)
+                : spell.damage,
+            range:
+              spell.view === "failure"
+                ? (previous?.range ?? null)
+                : spell.range,
           };
         });
         this.spellsLoaded = true;
       } else if (this.top?.tag === "ability" && this.complete()) {
-        this.lastAbilities = spells({ ...this.top, tag: "spell" });
+        let invocation = false;
+        this.lastAbilities = [];
+        for (const item of Object.values(this.top.items)) {
+          if (
+            item.level === 1 &&
+            /Invocations|기도|신앙/i.test(plain(item.text))
+          )
+            invocation = true;
+          const entry = spells({ tag: "spell", items: [item] })[0];
+          if (entry)
+            this.lastAbilities.push({
+              ...entry,
+              invocation,
+              cost: plain(item.text)
+                .trim()
+                .replace(/^[a-zA-Z]\s*[-+)]\s*/, "")
+                .split(/\s{2,}/)
+                .slice(1, -1)
+                .join(" · "),
+            });
+        }
         this.abilitiesLoaded = true;
       }
     }
@@ -232,7 +264,7 @@
             .filter(
               (slot) =>
                 slot &&
-                ["spell", "item"].includes(slot.kind) &&
+                ["spell", "item", "ability"].includes(slot.kind) &&
                 typeof slot.id === "string",
             )
             .slice(0, 6)

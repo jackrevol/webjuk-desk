@@ -5,10 +5,16 @@
   window.__webJukBridge = true;
   const Core = window.WebJukCore;
   const Advisor = window.WebJukAdvisor;
+  const Combat = window.WebJukCombat;
   const tracker = new Core.MenuTracker();
   const CHANNEL = "webjuk-desk-v1";
   const iconCache = new Map();
   const monsterDetails = new Map();
+  const itemDetails = new Map(),
+    abilityDetails = new Map();
+  let combatJob = null,
+    combatProfile = null,
+    describedItem = null;
   let skills = {},
     skillsLoaded = false,
     skillsChangedAt = 0,
@@ -45,6 +51,7 @@
       player: all[`${prefix}player`],
       cr: all[`${prefix}cell_renderer`],
       main: all[`${prefix}tileinfo-main`],
+      gui: all[`${prefix}tileinfo-gui`],
       util: all[`${prefix}util`],
       monsterList: all[`${prefix}monster_list`],
       mapKnowledge: all[`${prefix}map_knowledge`],
@@ -78,6 +85,7 @@
           }),
           distance,
           resists: monsterDetails.get(mon.id)?.resists || {},
+          will: monsterDetails.get(mon.id)?.will || null,
         },
       ];
     });
@@ -103,6 +111,7 @@
       connected() &&
       inGame(m) &&
       !m.client.is_watching() &&
+      !operation &&
       m.game?.get_input_mode?.() === 1 &&
       m.game?.get_ui_state?.() === 0 &&
       !tracker.top &&
@@ -121,6 +130,10 @@
   function reset() {
     tracker.reset();
     operation = null;
+    combatJob = null;
+    combatProfile = null;
+    itemDetails.clear();
+    abilityDetails.clear();
     actionLockUntil = 0;
     iconCache.clear();
     sequence++;
@@ -134,6 +147,12 @@
   }
   function observe(data) {
     if (!data || typeof data !== "object") return;
+    if (
+      data.msg === "ui-pop" &&
+      operation?.kind === "abilityDetail" &&
+      operation.closed
+    )
+      operation.descriptionPopped = true;
     if (data.msg === "game_client") {
       activeVersion = data.version;
       reset();
@@ -157,9 +176,45 @@
         if (title.includes(mon.name.toLowerCase())) {
           monsterDetails.set(mon.id, {
             resists: Advisor.resistances(Core.plain(data.body)),
+            will: Combat.willpower(Core.plain(data.body)),
             title,
           });
         }
+    }
+    if (
+      data.msg === "ui-push" &&
+      data.type === "describe-item" &&
+      (operation?.kind === "itemDetail" || describedItem)
+    ) {
+      const item =
+        operation?.kind === "itemDetail" ? operation.item : describedItem;
+      const current = Core.inventory(modules().player?.inv).find(
+        (i) => i.slot === item.slot && i.name === item.name,
+      );
+      if (current)
+        itemDetails.set(`${item.slot}:${item.name}`, {
+          ...Combat.description(Core.plain(data.body)),
+          sourceName: Core.plain(data.title)
+            .replace(/^\s*[a-zA-Z]\s*[-+)]\s*/, "")
+            .replace(/\.$/, ""),
+          updated: Date.now(),
+        });
+      if (operation?.kind === "itemDetail") operation.received = true;
+      describedItem = null;
+      inventoryRevision++;
+    }
+    if (
+      data.msg === "ui-push" &&
+      data.type === "describe-generic" &&
+      operation?.kind === "abilityDetail" &&
+      operation.selected
+    ) {
+      abilityDetails.set(operation.id, {
+        ...Combat.description(Core.plain(data.body)),
+        updated: Date.now(),
+      });
+      operation.received = true;
+      spellRevision++;
     }
     if (
       [
@@ -226,6 +281,7 @@
       Date.now() - operation.started > 8000
     ) {
       operation = null;
+      combatJob = null;
       notice(
         "요청을 중단했습니다. 게임 화면을 확인한 뒤 다시 시도하세요.",
         true,
@@ -233,6 +289,83 @@
       return;
     }
     const menu = tracker.top;
+    if (operation.kind === "profile") {
+      if (
+        menu &&
+        tracker.complete() &&
+        /mutations|돌연변이|선천적/i.test(menu.title)
+      ) {
+        combatProfile = Combat.mutationProfile(
+          Object.values(menu.items)
+            .map((i) => Core.plain(i.text))
+            .join("\n"),
+        );
+        operation = null;
+        key(27);
+      } else if (menu && !/mutations|돌연변이|선천적/i.test(menu.title)) {
+        operation = null;
+        combatJob = null;
+        notice("특성 조회를 중단했습니다.", true);
+      }
+      return;
+    }
+    if (operation.kind === "itemDetail") {
+      if (operation.received) {
+        operation = null;
+        key(27);
+      }
+      return;
+    }
+    if (operation.kind === "abilityDetail") {
+      if (operation.received && operation.keepOpen) {
+        operation = null;
+        return;
+      }
+      if (operation.received && !operation.closed) {
+        operation.closed = true;
+        key(27);
+        return;
+      }
+      if (
+        operation.closed &&
+        (operation.descriptionPopped ||
+          !document.querySelector("#ui-stack > .ui-popup"))
+      ) {
+        operation = null;
+        key(27);
+        return;
+      }
+      if (
+        menu?.tag === "ability" &&
+        tracker.complete() &&
+        !operation.selected
+      ) {
+        if (!operation.toggled) {
+          operation.toggled = true;
+          operation.toggleRevision = spellRevision;
+          key("!");
+          return;
+        }
+        // Never select an ability unless the server confirms examination mode.
+        if (
+          spellRevision <= operation.toggleRevision ||
+          !/describe|설명/i.test(menu.title)
+        )
+          return;
+        const current = Core.spells({ ...menu, tag: "spell" }).find(
+          (a) => a.id === operation.id,
+        );
+        if (!current) {
+          operation = null;
+          combatJob = null;
+          key(27);
+          return;
+        }
+        operation.selected = true;
+        key(current.letter);
+      }
+      return;
+    }
     if (operation.kind === "skills") {
       if (
         menu?.tag === "skills" &&
@@ -244,6 +377,7 @@
         notice("기술 정보를 갱신했습니다. 수치는 마지막 조회 시점 기준입니다.");
       } else if (menu && menu.tag !== "skills") {
         operation = null;
+        combatJob = null;
         notice("다른 메뉴가 열려 기술 조회를 중단했습니다.", true);
       } else if (
         !menu &&
@@ -251,6 +385,7 @@
         Date.now() - operation.started > 1200
       ) {
         operation = null;
+        combatJob = null;
         notice("기술 화면을 열 수 없습니다.", true);
       }
       return;
@@ -260,6 +395,7 @@
     const expectedTag = abilityOperation ? "ability" : "spell";
     if (menu && menu.tag !== expectedTag) {
       operation = null;
+      combatJob = null;
       notice("다른 메뉴가 열렸습니다. 게임 화면에서 확인하세요.", true);
       return;
     }
@@ -320,14 +456,58 @@
       );
     }
   }
+  function nextCombatStep(m) {
+    if (!combatJob || operation || !commandReady(m)) return;
+    if (!combatJob.length) {
+      combatJob = null;
+      notice("마법·아이템·능력 위력을 갱신했습니다.");
+      return;
+    }
+    const step = combatJob.shift();
+    if (step.kind === "expandAbilities") {
+      combatJob.unshift(
+        ...tracker.lastAbilities.map((a) => ({
+          kind: "abilityDetail",
+          id: a.id,
+        })),
+      );
+      nextCombatStep(m);
+      return;
+    }
+    operation = { ...step, started: Date.now(), skillsRevision };
+    if (step.kind === "skills") key("m");
+    else if (step.kind === "profile") key("A");
+    else if (step.kind === "refresh") key("I");
+    else if (step.kind === "refreshAbilities" || step.kind === "abilityDetail")
+      key("a");
+    else if (step.kind === "itemDetail") {
+      const current = Core.inventory(m.player.inv).find(
+        (i) => i.slot === step.item.slot && i.name === step.item.name,
+      );
+      if (!current) {
+        operation = null;
+        return;
+      }
+      send("inv_item_describe", { slot: current.slot });
+    }
+  }
   function tick() {
     if (stopped) return;
     const m = modules();
     hook(m);
+    if (
+      !operation &&
+      m.game?.get_input_mode?.() === 1 &&
+      m.game?.get_ui_state?.() === 0 &&
+      !document.querySelector("#ui-stack > .ui-popup")
+    )
+      tracker.stack = [];
     try {
       pump(m);
+      nextCombatStep(m);
     } catch {
       operation = null;
+      combatJob = null;
       notice("서버와 연결되지 않았습니다.", true);
     }
     const live = inGame(m);
@@ -342,6 +522,8 @@
       inventoryRevision,
       spellRevision,
       operation?.kind,
+      !!combatJob,
+      combatProfile,
       m.game?.get_input_mode?.(),
       m.game?.get_ui_state?.(),
       m.player?.hp,
@@ -363,6 +545,13 @@
     const items = live
       ? Core.inventory(m.player.inv, m.player).map((item) => ({
           ...item,
+          sourceId:
+            item.baseType === 3 ? Combat.identifyWand(item, m.main) : null,
+          combat: itemDetails.get(`${item.slot}:${item.name}`) || null,
+          gadgeteer: (Array.isArray(item.tile)
+            ? item.tile
+            : [item.tile]
+          ).includes(m.main?.UNRAND_GADGETEER),
           icon: icon(item),
         }))
       : [];
@@ -371,8 +560,8 @@
         connected: isConnected,
         inGame: live,
         watching,
-        ready: commandReady(m),
-        busy: !!operation,
+        ready: commandReady(m) && !operation && !combatJob,
+        busy: !!(operation || combatJob),
         session: sequence,
         name: live ? m.player.name : "",
         place: live
@@ -382,6 +571,13 @@
         hpMax: m.player?.hp_max || 0,
         mp: m.player?.mp || 0,
         mpMax: m.player?.mp_max || 0,
+        species: m.player?.species,
+        form: m.player?.form,
+        god: m.player?.god || "",
+        pietyRank: m.player?.piety_rank,
+        penance: !!m.player?.penance,
+        gold: m.player?.gold,
+        combatProfile,
         stats: {
           hp: m.player?.hp,
           hpMax: m.player?.hp_max,
@@ -402,12 +598,14 @@
         spells: live
           ? tracker.lastSpells.map((spell) => ({
               ...spell,
+              sourceId: Combat.identifySpell(spell, m.gui),
               icon: icon(spell, true),
             }))
           : [],
         abilities: live
           ? tracker.lastAbilities.map((ability) => ({
               ...ability,
+              combat: abilityDetails.get(ability.id) || null,
               icon: icon(ability, true),
             }))
           : [],
@@ -428,10 +626,11 @@
     if (action.type === "cancel") {
       if (!connected() || !inGame(m) || m.client.is_watching()) return;
       operation = null;
+      combatJob = null;
       key(27);
       return;
     }
-    if (operation) {
+    if (operation || combatJob) {
       notice("앞선 요청을 처리 중입니다.", true);
       return;
     }
@@ -440,6 +639,21 @@
         "메뉴·대상 지정을 Esc로 마친 후 사용하세요. 관전 중에는 조작할 수 없습니다.",
         true,
       );
+      return;
+    }
+    if (action.type === "refreshCombat") {
+      const items = Core.inventory(m.player.inv).filter(
+        (i) => ["missile", "evoke"].includes(i.category) || i.baseType === 0,
+      );
+      combatJob = [
+        { kind: "skills" },
+        { kind: "profile" },
+        { kind: "refresh" },
+        ...items.map((item) => ({ kind: "itemDetail", item })),
+        { kind: "refreshAbilities" },
+        { kind: "expandAbilities" },
+      ];
+      tick();
       return;
     }
     if (action.type === "item" || action.type === "describe") {
@@ -456,21 +670,29 @@
         notice("이 아이템은 상세 화면에서 사용할 수 있습니다.", true);
         return;
       }
+      if (action.type === "describe") describedItem = current;
       actionLockUntil = Date.now() + 500;
       send(action.type === "item" ? "inv_item_action" : "inv_item_describe", {
         slot: action.slot,
       });
     } else if (
-      action.type === "refreshAbilities" ||
-      action.type === "castAbility"
+      ["refreshAbilities", "castAbility", "describeAbility"].includes(
+        action.type,
+      )
     ) {
       if (
-        action.type === "castAbility" &&
+        action.type !== "refreshAbilities" &&
         !tracker.lastAbilities.some((ability) => ability.id === action.id)
       )
         return;
       operation = {
-        kind: action.type === "castAbility" ? "ability" : "refreshAbilities",
+        kind:
+          action.type === "castAbility"
+            ? "ability"
+            : action.type === "describeAbility"
+              ? "abilityDetail"
+              : "refreshAbilities",
+        keepOpen: action.type === "describeAbility",
         id: action.id,
         started: Date.now(),
       };
@@ -504,6 +726,7 @@
         memorise: "M",
         abilities: "a",
         skills: "m",
+        religion: "^",
       };
       if (keys[action.command]) {
         actionLockUntil = Date.now() + 500;
@@ -531,10 +754,26 @@
   });
   // Stop a pending selection if the player starts doing something else.
   window.addEventListener(
+    "mousedown",
+    (event) => {
+      if (
+        event.isTrusted &&
+        (operation || combatJob) &&
+        !event.composedPath().some((node) => node?.id === "webjuk-desk")
+      ) {
+        operation = null;
+        combatJob = null;
+        notice("마우스 입력으로 위력 조회를 중단했습니다.");
+      }
+    },
+    true,
+  );
+  window.addEventListener(
     "keydown",
     (event) => {
-      if (event.isTrusted && operation) {
+      if (event.isTrusted && (operation || combatJob)) {
         operation = null;
+        combatJob = null;
         notice("키보드 입력으로 빠른 시전을 중단했습니다.");
       }
     },

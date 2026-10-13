@@ -1,9 +1,13 @@
 /* Conservative, inspectable rules. Never a win probability or hidden-state lookup. */
 (function (root, factory) {
-  const api = factory();
+  const combat =
+    typeof module === "object" && module.exports
+      ? require("./combat.js")
+      : root.WebJukCombat;
+  const api = factory(combat);
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.WebJukAdvisor = api;
-})(globalThis, function () {
+})(globalThis, function (Combat) {
   "use strict";
   const labels = ["낮음", "보통", "위험", "매우 위험"];
   // Original mons_get_damage_level thresholds. No exact HP is transmitted.
@@ -202,7 +206,7 @@
         `조회한 기술: 투척 ${state.skills?.throwing ?? "?"} / 발동 ${state.skills?.evocations ?? "?"} / 기도 ${state.skills?.invocations ?? "?"}`,
       );
     const candidates = [];
-    function add(kind, item, role, score, why) {
+    function add(kind, item, role, score, why, totalDamage = null) {
       candidates.push({
         kind,
         id: item.id,
@@ -211,13 +215,30 @@
         icon: item.icon,
         role,
         score,
+        totalDamage,
         reason: why,
       });
     }
     function attackCandidate(kind, item, score, why) {
+      const calculation = Combat.evaluate(state, item, monster, kind);
+      if (calculation.excluded) return;
+      if (calculation.score != null) score = calculation.score;
+      else score = Math.min(score, 10);
+      why += ` · ${calculation.reason || "위력 미조회"}`;
       const type = element(item.name),
         resistance = type ? res[type] : undefined;
-      if (resistance >= 3) return;
+      if (
+        resistance >= 3 &&
+        ![
+          "ICE",
+          "THUNDER",
+          "LAVA",
+          "WATER",
+          "POISON_ARROW",
+          "MERCURY",
+        ].includes(Combat.definition(item)?.flavour)
+      )
+        return;
       if (resistance > 0) {
         score -= 25;
         why += " · 해당 속성 저항 있음";
@@ -225,7 +246,7 @@
         score += 20;
         why += " · 해당 속성 약점";
       } else if (type && resistance === undefined) why += " · 속성 저항 미확인";
-      add(kind, item, "대응", score, why);
+      add(kind, item, "대응", score, why, calculation.totalDamage);
     }
     for (const item of state.items || []) {
       if (!item.action || item.useless) continue;
@@ -254,18 +275,26 @@
           `투척 후보${throwing != null ? ` · 조회한 투척 기술 ${throwing}` : ""}`,
         );
       } else if (item.category === "evoke" && item.charges !== 0) {
+        if (
+          Combat.definition(item)?.flags.includes("obj") ||
+          item.sourceId === "SPELL_DIG"
+        )
+          continue;
         const evo = state.skills?.evocations;
         attackCandidate(
           "item",
           item,
           50 + Math.min(15, (evo || 0) * 2),
-          `발동 후보${evo != null ? ` · 조회한 발동 기술 ${evo}` : ""}${/paraly|polymorph|마비|변신/i.test(name) ? " · 의지 판정 확인 필요" : ""}`,
+          `발동 후보${evo != null ? ` · 조회한 발동 기술 ${evo}` : ""}`,
         );
       }
     }
     for (const spell of state.spells || []) {
       // A low failure rate does not make item retrieval an attack option.
       if (/^(?:Apportation|수집|마법의 수집)$/i.test(spell.name.trim()))
+        continue;
+      const def = Combat.definition(spell);
+      if (def?.flags.includes("helpful") || def?.flags.includes("obj"))
         continue;
       const failure = Number(spell.fail);
       if (
@@ -301,7 +330,14 @@
         continue;
       const cost = ability.text?.match(/(\d+)\s*MP/i);
       if (cost && Number(cost[1]) > (p.mp || 0)) continue;
-      if (
+      if (ability.combat?.damage) {
+        attackCandidate(
+          "ability",
+          ability,
+          60 - Number(ability.fail),
+          "공격 능력 · 서버 계산 피해량 기준",
+        );
+      } else if (
         /breathe|breath|smite|destruction|heroism|finesse|숨결|징벌|파괴|영웅|기교/i.test(
           ability.name,
         )
@@ -314,12 +350,15 @@
           "마지막 능력 목록 기준 · 신앙·자원 비용은 게임 메뉴에서 확인",
         );
     }
-    candidates.sort((a, b) => b.score - a.score);
+    candidates.sort(
+      (a, b) =>
+        (b.totalDamage ?? -1) - (a.totalDamage ?? -1) || b.score - a.score,
+    );
     return {
       risk,
       label: labels[risk],
       reasons,
-      candidates: candidates.slice(0, 5),
+      candidates,
     };
   }
   return {

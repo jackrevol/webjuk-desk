@@ -14,13 +14,25 @@
   "content_scripts": [
     {
       "matches": ["https://crawl.nemelex.cards/*"],
-      "js": ["core.js", "advisor.js", "bridge.js"],
+      "js": [
+        "core.js",
+        "power-data.js",
+        "combat.js",
+        "advisor.js",
+        "bridge.js"
+      ],
       "world": "MAIN",
       "run_at": "document_start"
     },
     {
       "matches": ["https://crawl.nemelex.cards/*"],
-      "js": ["core.js", "advisor.js", "content.js"],
+      "js": [
+        "core.js",
+        "power-data.js",
+        "combat.js",
+        "advisor.js",
+        "content.js"
+      ],
       "css": ["page.css"],
       "run_at": "document_idle"
     }

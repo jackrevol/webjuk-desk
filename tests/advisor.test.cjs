@@ -144,13 +144,20 @@ test("skill snapshots parse English and Korean levels and influence available ca
   assert.equal(skills.fighting, 4.5);
   assert.equal(skills.evocations, 7.1);
   const items = [
-    { slot: 1, name: "javelins", category: "missile", action: "Activate" },
+    {
+      slot: 1,
+      name: "javelins",
+      category: "missile",
+      action: "Activate",
+      combat: { rating: 6 },
+    },
     {
       slot: 2,
       name: "wand of flame",
       category: "evoke",
       action: "Zap",
       charges: 3,
+      combat: { damage: "2d8" },
     },
   ];
   const result = Advisor.advise(

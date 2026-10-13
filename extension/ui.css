@@ -159,6 +159,19 @@ input:focus-visible {
   white-space: nowrap;
   text-align: left;
 }
+.ability-cost {
+  display: block;
+  color: #888;
+  font-size: 9px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.faith-summary {
+  grid-column: 1/-1;
+  font-size: 11px;
+  color: var(--color-14, #ff0);
+  padding: 2px;
+}
 .spell-metrics {
   display: flex;
   flex-shrink: 0;

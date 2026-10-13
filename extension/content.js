@@ -2,11 +2,12 @@
   "use strict";
   if (document.getElementById("webjuk-desk")) return;
   const Core = globalThis.WebJukCore,
+    Combat = globalThis.WebJukCombat,
     Advisor = globalThis.WebJukAdvisor,
     CHANNEL = "webjuk-desk-v1";
   let prefs = Core.settings(),
     state = { items: [], spells: [], ready: false };
-  const sections = ["spells", "missiles", "evokes", "items"];
+  const sections = ["faith", "spells", "missiles", "evokes", "items"];
   const closedSections = new Set();
   let recording = null,
     listSignature = "";
@@ -21,16 +22,20 @@
   shadow.append(sheet);
   const app = document.createElement("section");
   app.className = "native-panel";
-  app.setAttribute("aria-label", "마법·소지품·투척물·발동 아이템");
+  app.setAttribute("aria-label", "신앙·마법·투척물·발동 아이템·소지품");
   app.innerHTML = `
     <header class="panel-header">
-      <button id="spells-heading" class="section-toggle" data-section="spells" aria-controls="spells-content" title="마법 접기·펼치기 (Alt M)">마법</button>
-      <span class="tab-spacer"></span><button class="tool" data-ui="refresh" title="마법 성공률·위력 갱신" aria-label="마법 목록 불러오기">↻</button><button class="tool" data-ui="settings" title="확장 설정" aria-label="확장 설정">⚙</button>
+      <button id="faith-heading" class="section-toggle" data-section="faith" aria-controls="faith-content" title="신앙 접기·펼치기 (Alt G)">신앙</button>
+      <span class="tab-spacer"></span><button class="tool" data-ui="religion" title="원본 신앙 정보" aria-label="원본 신앙 정보">◇</button><button class="tool" data-ui="abilities" title="신의 능력 목록 갱신" aria-label="신의 능력 목록 갱신">↻</button><button class="tool" data-ui="settings" title="확장 설정" aria-label="확장 설정">⚙</button>
       <button class="tool" data-ui="collapse" title="접기·펼치기 (Alt &#96;)" aria-label="패널 접기·펼치기">−</button>
     </header>
     <div class="body"><div class="quick-slots" aria-label="빠른 슬롯" hidden></div>
       <div class="sections">
+        <section class="inventory-section" data-pane="faith" aria-labelledby="faith-heading">
+          <div id="faith-content" class="tiles spell-list" aria-label="신앙·신의 능력 목록"></div>
+        </section>
         <section class="inventory-section" data-pane="spells" aria-labelledby="spells-heading">
+          <header class="panel-header"><button id="spells-heading" class="section-toggle" data-section="spells" aria-controls="spells-content" title="마법 접기·펼치기 (Alt M)">마법</button><span class="tab-spacer"></span><button class="tool" data-ui="refresh" title="마법 성공률·위력 갱신" aria-label="마법 목록 불러오기">↻</button></header>
           <div id="spells-content" class="tiles spell-list" aria-label="마법 목록"></div>
         </section>
         <section class="inventory-section" data-pane="missiles" aria-labelledby="missiles-heading">
@@ -49,6 +54,7 @@
       <section class="settings" hidden aria-label="확장 설정">
         <label><span>집중 화면 (채팅 숨김)</span><input type="checkbox" data-pref="focus"></label>
         <button class="text-button" data-ui="skills" title="기술 수치 갱신 · 훈련 설정은 바꾸지 않음">기술 ↻</button><button class="text-button" data-ui="abilities" title="능력 목록 갱신">능력 ↻</button>
+        <button class="text-button" data-ui="combat" title="마법·공격 아이템·능력의 서버 계산 피해량 및 특성·기술 조회">위력 ↻</button>
         <div class="shortcut-settings"></div>
         <div class="slot-settings"></div><button data-ui="reset" class="text-button">기본 설정 복원</button>
       </section>
@@ -98,7 +104,7 @@
     return prefs.quickSlots.findIndex(
       (slot) =>
         slot.kind === kind &&
-        slot.id === (kind === "spell" ? item.id : itemId(item)),
+        slot.id === (kind !== "item" ? item.id : itemId(item)),
     );
   }
   function pin(kind, item) {
@@ -111,7 +117,7 @@
     } else
       slots.push({
         kind,
-        id: kind === "spell" ? item.id : itemId(item),
+        id: kind !== "item" ? item.id : itemId(item),
         name: item.name,
       });
     setPrefs({ quickSlots: slots });
@@ -121,7 +127,11 @@
       notify("게임의 메뉴·대상 지정을 마친 후 사용하세요.", true);
       return;
     }
-    if (kind === "ability") action({ type: "castAbility", id: item.id });
+    if (kind === "ability")
+      action({
+        type: describe ? "describeAbility" : "castAbility",
+        id: item.id,
+      });
     else if (kind === "spell")
       action({ type: describe ? "describeSpell" : "cast", id: item.id });
     else
@@ -142,7 +152,7 @@
     return el(
       "span",
       `tile fallback ${item.category || "spell"}`,
-      kind === "spell"
+      kind !== "item"
         ? "✦"
         : {
             missile: "➶",
@@ -154,8 +164,10 @@
     );
   }
   function resolveSlot(slot) {
-    return slot.kind === "spell"
-      ? state.spells.find((item) => item.id === slot.id)
+    return slot.kind !== "item"
+      ? (slot.kind === "ability" ? state.abilities || [] : state.spells).find(
+          (item) => item.id === slot.id,
+        )
       : state.items.find((item) => itemId(item) === slot.id);
   }
   function renderSlots() {
@@ -204,6 +216,13 @@
       state.inGame,
       state.watching,
       state.spellsLoaded,
+      state.abilities,
+      state.god,
+      state.pietyRank,
+      state.gold,
+      state.penance,
+      state.skills,
+      state.combatProfile,
       prefs.quickSlots,
     ]);
     if (signature === listSignature) return;
@@ -213,6 +232,17 @@
   function renderSection(tab) {
     const list = $(`#${tab}-content`);
     list.replaceChildren();
+    if (tab === "faith") {
+      const faith = Combat.faith(
+          state.god,
+          state.pietyRank,
+          state.gold,
+          state.penance,
+        ),
+        summary = el("span", "faith-summary", faith.text);
+      summary.title = faith.detail;
+      list.append(summary);
+    }
     if (!state.connected || !state.inGame) {
       empty(
         list,
@@ -229,8 +259,15 @@
       );
       return;
     }
-    const items = (tab === "spells" ? state.spells : state.items).filter(
+    const items = (
+      tab === "spells"
+        ? state.spells
+        : tab === "faith"
+          ? state.abilities || []
+          : state.items
+    ).filter(
       (item) =>
+        (tab !== "faith" || item.invocation) &&
         (tab !== "missiles" || item.category === "missile") &&
         (tab !== "evokes" || item.category === "evoke"),
     );
@@ -242,7 +279,8 @@
       );
       return;
     }
-    const kind = tab === "spells" ? "spell" : "item";
+    const kind =
+      tab === "spells" ? "spell" : tab === "faith" ? "ability" : "item";
     for (const item of items) {
       const cell = el(
         "div",
@@ -250,7 +288,8 @@
       );
       const info = `${item.letter}) ${item.name}${item.detail ? ` · ${item.detail}` : ""}${item.quantity > 1 ? ` · 수량 ${item.quantity}` : ""}${item.charges != null ? ` · 충전 ${item.charges}` : ""}`;
       const button = el("button", "tile-button");
-      button.title = `${info}\n좌클릭: ${kind === "spell" ? "시전" : item.action || "상세 설명"} · 우클릭: 설명 · Shift+클릭: 슬롯 등록`;
+      const calculation = Combat.evaluate(state, item, {}, kind);
+      button.title = `${info}${calculation.reason ? `\n${calculation.reason}` : ""}\n좌클릭: ${kind !== "item" ? "시전·능력 사용" : item.action || "상세 설명"} · 우클릭: 설명 · Shift+클릭: 슬롯 등록`;
       button.setAttribute(
         "aria-label",
         `${item.name} ${kind === "spell" ? "시전" : item.category === "missile" ? "투척" : item.action ? "사용" : "상세 설명"}`,
@@ -260,14 +299,15 @@
         String(!state.ready || !!state.busy),
       );
       button.append(imageFor(item, kind), el("kbd", "letter", item.letter));
-      if (kind === "spell") {
+      if (kind !== "item") {
         cell.classList.add("spell-row");
         const metrics = el("span", "spell-metrics");
         const success = item.fail == null ? "—" : `${100 - Number(item.fail)}%`;
-        const power = item.power ?? "—";
+        const power =
+          (kind === "ability" ? item.combat?.damage : item.power) ?? "—";
         for (const [label, value] of [
           ["성공률", success],
-          ["위력", power],
+          [kind === "ability" ? "피해" : "위력", power],
         ]) {
           const metric = el("span", "spell-metric");
           metric.append(
@@ -276,10 +316,13 @@
           );
           metrics.append(metric);
         }
-        button.append(el("span", "spell-name", item.name), metrics);
+        const name = el("span", "spell-name", item.name);
+        if (kind === "ability" && item.cost)
+          name.append(el("span", "ability-cost", item.cost));
+        button.append(name, metrics);
         button.setAttribute(
           "aria-label",
-          `${item.name} 시전 · 성공률 ${success} · 위력 ${power}`,
+          `${item.name} ${kind === "ability" ? "능력 사용" : "시전"} · 성공률 ${success} · 위력 ${power}`,
         );
       }
       if (item.quantity > 1 || item.charges != null)
@@ -346,6 +389,7 @@
       ["inventory", "소지품"],
       ["missiles", "투척"],
       ["evokes", "발동"],
+      ["faith", "신앙"],
       ["toggle", "접기·펼치기"],
     ]) {
       const row = el("label");
@@ -402,7 +446,9 @@
       return;
     adviceSignature = signature;
     list
-      .querySelectorAll(".webjuk-monster-advice, .webjuk-monster-health")
+      .querySelectorAll(
+        ".webjuk-monster-advice, .webjuk-monster-health, .webjuk-monster-actions",
+      )
       .forEach((node) => node.remove());
     if (!prefs.enabled || !Advisor) return;
     for (const mon of state.monsters || []) {
@@ -431,7 +477,9 @@
         `${mon.name}: ${report.label}. ${report.reasons.join(". ")}`,
       );
       box.append(badge);
-      for (const candidate of report.candidates.slice(0, 2)) {
+      const actions = el("span", "webjuk-monster-actions");
+      actions.setAttribute("aria-label", `${mon.name} 대응 수단 목록`);
+      for (const candidate of report.candidates) {
         const button = el("button", "webjuk-candidate");
         button.title = `${candidate.role}: ${candidate.name}\n${candidate.reason}\n클릭: 사용·시전. 저항 미확인 시 효과를 보장하지 않습니다.`;
         button.setAttribute(
@@ -454,13 +502,13 @@
         });
         for (const type of ["keydown", "keypress", "keyup"])
           button.addEventListener(type, (event) => event.stopPropagation());
-        box.append(button);
+        actions.append(button);
       }
       row.append(box);
+      if (actions.childElementCount) row.append(actions);
     }
   }
   function render() {
-    mount();
     $(".body").hidden = prefs.collapsed;
     $("[data-ui=collapse]").textContent = prefs.collapsed ? "+" : "−";
     for (const button of $$("[data-section]")) {
@@ -475,9 +523,14 @@
     $(".sections").hidden = showSettings;
     $(".settings").hidden = !showSettings;
     $("[data-ui=refresh]").disabled = !state.ready || state.busy;
+    for (const button of $$(
+      "[data-ui=abilities], [data-ui=combat], [data-ui=religion]",
+    ))
+      button.disabled = !state.ready || state.busy;
     renderSlots();
     renderList();
     renderAdvice();
+    mount();
   }
   function focusSection(next) {
     closedSections.delete(next);
@@ -525,6 +578,14 @@
         action({ type: "refreshAbilities" });
         shadow.activeElement?.blur();
         break;
+      case "combat":
+        action({ type: "refreshCombat" });
+        shadow.activeElement?.blur();
+        break;
+      case "religion":
+        action({ type: "command", command: "religion" });
+        shadow.activeElement?.blur();
+        break;
       case "cancel":
         action({ type: "cancel" });
         shadow.activeElement?.blur();
@@ -558,7 +619,9 @@
     (event) => {
       if (
         event.composedPath().includes(host) ||
-        event.target.closest?.(".webjuk-monster-advice")
+        event.target.closest?.(
+          ".webjuk-monster-advice, .webjuk-monster-actions",
+        )
       )
         event.stopImmediatePropagation();
     },

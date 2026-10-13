@@ -187,3 +187,20 @@ test("evocable inventory includes wands and miscellaneous devices", () => {
     ["evoke", "evoke", "potion"],
   );
 });
+
+test("ability menus preserve the invocation section and costs", () => {
+  const t = new Core.MenuTracker();
+  t.receive({
+    msg: "menu",
+    tag: "ability",
+    total_items: 3,
+    items: [
+      { level: 2, text: "a - Breathe Fire    Hunger    5%", hotkeys: [97] },
+      { level: 1, text: "Invocations -" },
+      { level: 2, text: "b - Heroism    2 MP, Piety    3%", hotkeys: [98] },
+    ],
+  });
+  assert.equal(t.lastAbilities[0].invocation, false);
+  assert.equal(t.lastAbilities[1].invocation, true);
+  assert.equal(t.lastAbilities[1].cost, "2 MP, Piety");
+});

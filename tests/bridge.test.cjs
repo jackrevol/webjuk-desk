@@ -4,6 +4,7 @@ const vm = require("node:vm");
 const fs = require("node:fs");
 const Core = require("../extension/core.js");
 const Advisor = require("../extension/advisor.js");
+const Combat = require("../extension/combat.js");
 const bridge = fs.readFileSync(
   require.resolve("../extension/bridge.js"),
   "utf8",
@@ -51,6 +52,7 @@ function harness() {
   const win = {
     WebJukCore: Core,
     WebJukAdvisor: Advisor,
+    WebJukCombat: Combat,
     game,
     socket: { readyState: 1 },
     current_layer: "normal",
@@ -339,4 +341,142 @@ test("ability refresh and activation resolve the latest server hotkey", () => {
     items: [{ ...spell(99), text: "c - Breathe Fire    3%" }],
   });
   assert.deepEqual(h.sent.at(-1), { type: "input", text: "c" });
+});
+
+test("ability description waits for fresh server examination mode before sending a selection", () => {
+  const h = harness();
+  h.setMode(7);
+  h.receive({
+    msg: "menu",
+    tag: "ability",
+    total_items: 1,
+    items: [{ ...spell(), text: "a - Heroism    2 MP, Piety    3%" }],
+  });
+  h.receive({ msg: "close_all_menus" });
+  h.setMode(1);
+  h.act({ type: "describeAbility", id: "5:101" });
+  h.setMode(7);
+  h.receive({
+    msg: "menu",
+    tag: "ability",
+    title: "Ability - do what?",
+    total_items: 1,
+    items: [{ ...spell(), text: "a - Heroism    2 MP, Piety    3%" }],
+  });
+  assert.equal(h.sent.at(-1).text, "!");
+  const sent = h.sent.length;
+  h.tick();
+  assert.equal(h.sent.length, sent);
+  h.receive({ msg: "update_menu", title: "Ability - do what?" });
+  assert.equal(h.sent.length, sent);
+  h.receive({ msg: "update_menu", title: "Ability - describe what?" });
+  assert.equal(h.sent.at(-1).text, "a");
+  h.receive({
+    msg: "ui-push",
+    type: "describe-generic",
+    title: "Heroism",
+    body: "Damage: 3d8\nRange: 7",
+  });
+  assert.equal(h.lastState().abilities[0].combat.damage, "3d8");
+  assert.equal(h.sent.at(-1).text, "a"); // manual description stays open
+});
+test("power refresh proceeds from read-only skills to profile, and keyboard input cancels the whole queue", () => {
+  const h = harness();
+  h.act({ type: "refreshCombat" });
+  assert.equal(h.sent.at(-1).text, "m");
+  h.setMode(7);
+  h.receive({ msg: "menu", tag: "skills", type: "crt" });
+  h.receive({ msg: "txt", lines: { 0: "Evocations 10.0" } });
+  h.advance(200);
+  assert.equal(h.sent.at(-1).keycode, 27);
+  h.setMode(1);
+  h.receive({ msg: "close_all_menus" });
+  assert.equal(h.sent.at(-1).text, "A");
+  h.setMode(7);
+  h.receive({
+    msg: "menu",
+    title: "Innate Abilities and Mutations",
+    total_items: 0,
+    items: [],
+  });
+  assert.equal(h.lastState().combatProfile.mpWands, 0);
+  assert.equal(h.sent.at(-1).keycode, 27);
+  h.trustedKey();
+  const sent = h.sent.length;
+  h.setMode(1);
+  h.receive({ msg: "close_all_menus" });
+  h.advance(500);
+  assert.equal(h.sent.length, sent);
+  assert.equal(h.lastState().busy, false);
+  assert.equal(
+    h.sent.some((x) => x.type === "inv_item_use" || x.text === "z"),
+    false,
+  );
+});
+
+test("ability scan closes the child description and parent menu separately", () => {
+  const h = harness();
+  h.act({ type: "refreshCombat" });
+  h.setMode(7);
+  h.receive({ msg: "menu", tag: "skills", type: "crt" });
+  h.receive({ msg: "txt", lines: { 0: "Evocations 1.0" } });
+  h.advance(200);
+  h.setMode(1);
+  h.receive({ msg: "close_all_menus" });
+  h.setMode(7);
+  h.receive({
+    msg: "menu",
+    title: "Innate Abilities and Mutations",
+    total_items: 0,
+    items: [],
+  });
+  h.setMode(1);
+  h.receive({ msg: "close_all_menus" });
+  spellMenu(h);
+  h.receive({
+    msg: "update_menu_items",
+    items: [
+      { ...spell(), text: "a - Magic Dart    20%    1d4    7    Silent" },
+    ],
+  });
+  h.setMode(1);
+  h.receive({ msg: "close_all_menus" });
+  // The harness inventory has only a potion, so ability lookup is next.
+  h.setMode(7);
+  h.receive({
+    msg: "menu",
+    tag: "ability",
+    title: "Ability - do what?",
+    total_items: 1,
+    items: [{ ...spell(), text: "a - Heroism    2 MP    3%" }],
+  });
+  h.setMode(1);
+  h.receive({ msg: "close_all_menus" });
+  h.setMode(7);
+  h.receive({
+    msg: "menu",
+    tag: "ability",
+    title: "Ability - do what?",
+    total_items: 1,
+    items: [{ ...spell(), text: "a - Heroism    2 MP    3%" }],
+  });
+  h.receive({ msg: "update_menu", title: "Ability - describe what?" });
+  h.popup(true);
+  h.receive({
+    msg: "ui-push",
+    type: "describe-generic",
+    title: "Heroism",
+    body: "Range: N/A",
+  });
+  assert.equal(h.sent.at(-1).keycode, 27);
+  const before = h.sent.length;
+  // The parent ability popup still exists when the child ui-pop arrives.
+  h.receive({ msg: "ui-pop" });
+  assert.equal(h.sent.length, before + 1);
+  assert.equal(h.sent.at(-1).keycode, 27);
+  h.popup(false);
+  h.setMode(1);
+  h.receive({ msg: "close_all_menus" });
+  assert.equal(h.lastState().busy, false);
+  assert.equal(h.lastState().ready, true);
 });

@@ -7,6 +7,7 @@
     connected = true,
     menu = false;
   let powerView = false;
+  let abilityExamine = false;
   window.chrome = {
     runtime: { getURL: (file) => `/extension/${file}` },
     storage: {
@@ -47,6 +48,9 @@
     ev: 14,
     sh: 0,
     xl: 12,
+    god: "Vehumet",
+    piety_rank: 5,
+    gold: 250,
     status: [],
     pos: { x: 0, y: 0 },
     inv: {
@@ -75,6 +79,7 @@
         action_verb: "Read",
       },
       4: {
+        base_type: 3,
         name: "a wand of flame (18)",
         quantity: 1,
         plus: 18,
@@ -159,7 +164,32 @@
           return;
         }
         const key = String.fromCharCode(data.keycode);
+        if (key === "A") {
+          mode = 7;
+          menu = "profile";
+          receive({
+            msg: "menu",
+            title: "Innate Abilities and Mutations",
+            total_items: 0,
+            items: [],
+          });
+          return;
+        }
+        if (key === "a" && !menu) {
+          openAbilities();
+          return;
+        }
         if (key === "!" && menu) {
+          if (menu === "ability") {
+            abilityExamine = !abilityExamine;
+            receive({
+              msg: "update_menu",
+              title: abilityExamine
+                ? "Ability - describe what?"
+                : "Ability - do what?",
+            });
+            return;
+          }
           powerView = !powerView;
           receive({
             msg: "update_menu_items",
@@ -169,7 +199,9 @@
                   text: `${String.fromCharCode(97 + i)} - ${item.text
                     .slice(4)
                     .split(/\s{2,}/)[0]
-                    .padEnd(30)}  ${18 + i * 7}%  2d6  7  Quiet`,
+                    .padEnd(
+                      30,
+                    )}  ${[20, 24, 32, 39, 46, 53][i]}%  2d6  7  Quiet`,
                 }))
               : spellItems,
           });
@@ -201,6 +233,22 @@
           });
           return;
         }
+        if (menu === "ability" && /[ab]/.test(key)) {
+          if (!abilityExamine) {
+            log.textContent = "능력 사용 요청";
+            return;
+          }
+          const name = key === "a" ? "Heroism" : "Divine fire",
+            body = key === "a" ? "Range: 0" : "Damage: 3d12\nRange: 7";
+          popup(name, body);
+          receive({
+            msg: "ui-push",
+            type: "describe-generic",
+            title: name,
+            body,
+          });
+          return;
+        }
         if (menu && /[a-f]/.test(key)) {
           log.textContent = `${spellItems[key.charCodeAt(0) - 97].text.trim()} → 시전 요청. 데모에서는 턴을 소비하지 않습니다.`;
           mode = 1;
@@ -211,12 +259,21 @@
         popup(`게임 명령: ${key}`, "실제 게임에서는 해당 메뉴가 열립니다.");
       } else if (type.startsWith("inv_item_")) {
         const item = player.inv[data.slot];
-        if (type === "inv_item_describe")
-          popup(
-            item.name,
-            `수량 ${item.quantity} · ${item.action_verb} · 서버의 아이템 상세 화면`,
-          );
-        else {
+        if (type === "inv_item_describe") {
+          const body =
+            item.base_type === 1
+              ? "Damage rating: 14\nCurrent attack delay: 1.2."
+              : item.qty_field === "plus"
+                ? "Damage: 2d8"
+                : "Damage rating: 9";
+          popup(item.name, body);
+          receive({
+            msg: "ui-push",
+            type: "describe-item",
+            title: item.name,
+            body,
+          });
+        } else {
           log.textContent = `${item.action_verb}: ${item.name} → 서버의 아이템 사용 명령`;
           receive({ msg: "player", inv: {} });
         }
@@ -242,6 +299,26 @@
         }),
       50,
     );
+  }
+  function openAbilities() {
+    menu = "ability";
+    abilityExamine = false;
+    mode = 7;
+    receive({
+      msg: "menu",
+      tag: "ability",
+      title: "Ability - do what?",
+      total_items: 3,
+      items: [
+        { level: 1, text: "Invocations -" },
+        { level: 2, text: "a - Heroism    2 MP, Piety    3%", hotkeys: [97] },
+        {
+          level: 2,
+          text: "b - Divine fire    3 MP, Piety    5%",
+          hotkeys: [98],
+        },
+      ],
+    });
   }
   function popup(title, description) {
     mode = 7;
