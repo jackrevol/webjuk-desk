@@ -310,7 +310,7 @@
       title: "Ability - do what?",
       total_items: 3,
       items: [
-        { level: 1, text: "Invocations -" },
+        { level: 2, text: "권능 -" },
         { level: 2, text: "a - Heroism    2 MP, Piety    3%", hotkeys: [97] },
         {
           level: 2,

@@ -201,8 +201,8 @@
       node.append(button);
     });
   }
-  function empty(list, title, description) {
-    const node = el("div", "empty");
+  function empty(list, title, description, showText = false) {
+    const node = el("div", "empty", showText ? title : undefined);
     node.title = `${title} · ${description}`;
     list.append(node);
   }
@@ -217,6 +217,7 @@
       state.watching,
       state.spellsLoaded,
       state.abilities,
+      state.abilitiesLoaded,
       state.god,
       state.pietyRank,
       state.gold,
@@ -259,6 +260,15 @@
       );
       return;
     }
+    if (tab === "faith" && !state.abilitiesLoaded) {
+      empty(
+        list,
+        "권능 목록 미조회 · ↻로 불러오기",
+        "신앙 칸의 ↻로 현재 신의 권능을 불러오세요.",
+        true,
+      );
+      return;
+    }
     const items = (
       tab === "spells"
         ? state.spells
@@ -274,8 +284,15 @@
     if (!items.length) {
       empty(
         list,
-        tab === "missiles" ? "투척물이 없습니다" : "표시할 항목이 없습니다",
-        "현재 목록에 해당 항목이 없습니다.",
+        tab === "faith"
+          ? "현재 표시할 권능이 없습니다"
+          : tab === "missiles"
+            ? "투척물이 없습니다"
+            : "표시할 항목이 없습니다",
+        tab === "faith"
+          ? "마지막 능력 조회에서 신의 권능이 확인되지 않았습니다. 신앙 칸의 ↻로 갱신하세요."
+          : "현재 목록에 해당 항목이 없습니다.",
+        tab === "faith",
       );
       return;
     }

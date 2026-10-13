@@ -208,13 +208,15 @@
         let invocation = false;
         this.lastAbilities = [];
         for (const item of Object.values(this.top.items)) {
+          // 타일 메뉴에서는 권능 구분 제목도 단축키 없는 MEL_ITEM으로 전송됩니다.
           if (
-            item.level === 1 &&
-            /Invocations|기도|신앙/i.test(plain(item.text))
+            !item.hotkeys?.length &&
+            /^\s*(?:Invocations?|권능|기도|신앙|신의\s*능력)\s*[-:：]?\s*$/i.test(plain(item.text))
           )
             invocation = true;
+          else if (item.level === 1) invocation = false;
           const entry = spells({ tag: "spell", items: [item] })[0];
-          if (entry)
+          if (entry && !/^(?:Renounce Religion|신앙\s*포기)$/i.test(entry.name.trim()))
             this.lastAbilities.push({
               ...entry,
               invocation,

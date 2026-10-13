@@ -204,3 +204,43 @@ test("ability menus preserve the invocation section and costs", () => {
   assert.equal(t.lastAbilities[1].invocation, true);
   assert.equal(t.lastAbilities[1].cost, "2 MP, Piety");
 });
+
+test("Korean and tiled invocation headers classify god powers without becoming abilities", () => {
+  for (const header of ["<blue> 권능 -    </blue>", "Invocations -", "신의 능력:"])
+    for (const level of [1, 2]) {
+      const tracker = new Core.MenuTracker();
+      tracker.receive({
+        msg: "menu", tag: "ability", total_items: 5,
+        items: [
+          { level: 2, text: "b - Breathe Fire    None    0%", hotkeys: [98] },
+          { level, text: header },
+          { level: 2, text: "a - Heroism    2 MP, Piety-    8%", hotkeys: [97] },
+          { level: 1, text: "Abilities -" },
+          { level: 2, text: "c - Blink    2 MP    5%", hotkeys: [99] },
+        ],
+      });
+      assert.equal(tracker.abilitiesLoaded, true);
+      assert.deepEqual(tracker.lastAbilities.map((ability) => [ability.name, ability.invocation]), [
+        ["Breathe Fire", false], ["Heroism", true], ["Blink", false],
+      ]);
+      assert.equal(tracker.lastAbilities[1].cost, "2 MP, Piety-");
+      assert.equal(tracker.lastAbilities[1].fail, "8");
+    }
+});
+
+test("renouncing religion is excluded from extension ability lists in both languages", () => {
+  const tracker = new Core.MenuTracker();
+  tracker.receive({
+    msg: "menu",
+    tag: "ability",
+    total_items: 4,
+    items: [
+      { level: 2, text: "권능 -" },
+      { level: 2, text: "X - 신앙 포기    없음    0%", hotkeys: [88] },
+      { level: 2, text: "Y - Renounce Religion    None    0%", hotkeys: [89] },
+      { level: 2, text: "a - Heroism    2 MP, Piety-    8%", hotkeys: [97] },
+    ],
+  });
+  assert.deepEqual(tracker.lastAbilities.map((ability) => ability.name), ["Heroism"]);
+  assert.equal(tracker.abilitiesLoaded, true);
+});
