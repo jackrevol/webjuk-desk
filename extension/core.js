@@ -14,6 +14,7 @@
       inventory: "Alt+KeyI",
       spells: "Alt+KeyM",
       missiles: "Alt+KeyT",
+      evokes: "Alt+KeyE",
       toggle: "Alt+Backquote",
     },
   });
@@ -93,6 +94,8 @@
         const text = plain(item.text).trim();
         const body = text.replace(/^[a-zA-Z]\s*[-+)]\s*/, "");
         const columns = body.split(/\s{2,}/);
+        const powerView =
+          columns.length >= 4 && /^(?:\d+%|N\/A|[.#]+)$/.test(columns[1] || "");
         return {
           id: spellIdentity(item),
           letter: String.fromCharCode(item.hotkeys[0]),
@@ -100,8 +103,12 @@
           detail: columns.slice(1).join(" · "),
           text,
           tiles: item.tiles,
-          fail: text.match(/(\d+)%/)?.[1] ?? null,
-          level: Number(body.match(/\s(\d+)\s*$/)?.[1]) || null,
+          view: powerView ? "power" : "failure",
+          power: powerView ? columns[1] : null,
+          fail: powerView ? null : (text.match(/(\d+)%/)?.[1] ?? null),
+          level: powerView
+            ? null
+            : Number(body.match(/\s(\d+)\s*$/)?.[1]) || null,
           colour: item.colour,
         };
       });
@@ -168,7 +175,22 @@
     }
     capture() {
       if (this.top?.tag === "spell" && this.complete()) {
-        this.lastSpells = spells(this.top);
+        this.lastSpells = spells(this.top).map((spell) => {
+          const previous = this.lastSpells.find(
+            (entry) => entry.id === spell.id,
+          );
+          return {
+            ...spell,
+            fail:
+              spell.view === "power" ? (previous?.fail ?? null) : spell.fail,
+            level:
+              spell.view === "power" ? (previous?.level ?? null) : spell.level,
+            power:
+              spell.view === "failure"
+                ? (previous?.power ?? null)
+                : spell.power,
+          };
+        });
         this.spellsLoaded = true;
       } else if (this.top?.tag === "ability" && this.complete()) {
         this.lastAbilities = spells({ ...this.top, tag: "spell" });

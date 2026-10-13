@@ -6,6 +6,7 @@
     watching = false,
     connected = true,
     menu = false;
+  let powerView = false;
   window.chrome = {
     runtime: { getURL: (file) => `/extension/${file}` },
     storage: {
@@ -158,6 +159,22 @@
           return;
         }
         const key = String.fromCharCode(data.keycode);
+        if (key === "!" && menu) {
+          powerView = !powerView;
+          receive({
+            msg: "update_menu_items",
+            items: powerView
+              ? spellItems.map((item, i) => ({
+                  ...item,
+                  text: `${String.fromCharCode(97 + i)} - ${item.text
+                    .slice(4)
+                    .split(/\s{2,}/)[0]
+                    .padEnd(30)}  ${18 + i * 7}%  2d6  7  Quiet`,
+                }))
+              : spellItems,
+          });
+          return;
+        }
         if (key === "I" || key === "z") {
           mode = 7;
           if (key === "z") {
@@ -211,6 +228,7 @@
   }
   function openSpells() {
     menu = true;
+    powerView = false;
     mode = 7;
     setTimeout(
       () =>

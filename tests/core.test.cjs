@@ -88,7 +88,11 @@ test("nested and replacing menus preserve the parent and item updates", () => {
     items: [{ text: "a - Blink    2%", hotkeys: [97] }],
   });
   assert.equal(tracker.lastSpells[0].letter, "a");
-  tracker.receive({ msg: "update_menu_items", chunk_start: 0, items: [{ text: "Blink", level: 2 }] });
+  tracker.receive({
+    msg: "update_menu_items",
+    chunk_start: 0,
+    items: [{ text: "Blink", level: 2 }],
+  });
   assert.equal(tracker.lastSpells.length, 0);
   tracker.receive({
     msg: "menu",
@@ -124,4 +128,62 @@ test("shortcut normalization and composition guards", () => {
     0,
   );
   assert.equal(Core.settings().shortcuts.missiles, "Alt+KeyT");
+  assert.equal(
+    Core.settings({ shortcuts: { spells: "Ctrl+KeyM" } }).shortcuts.evokes,
+    "Alt+KeyE",
+  );
+});
+test("spell power is kept separate from failure across Korean partial updates", () => {
+  const tracker = new Core.MenuTracker();
+  const rows = [
+    {
+      level: 2,
+      hotkeys: [97],
+      tiles: [{ tex: 5, t: 9386 }],
+      text: " a - <lightgrey>죽음의 입맞춤                   파괴/강령                  56%       1</lightgrey>",
+    },
+    {
+      level: 2,
+      hotkeys: [98],
+      tiles: [{ tex: 5, t: 9425 }],
+      text: " b + 수집                            전이                       56%       1",
+    },
+  ];
+  tracker.receive({ msg: "menu", tag: "spell", total_items: 2, items: rows });
+  tracker.receive({
+    msg: "update_menu_items",
+    items: [
+      {
+        ...rows[0],
+        text: " a - 죽음의 입맞춤                   0%        2d5       1       거의 없음",
+      },
+    ],
+  });
+  assert.equal(tracker.lastSpells[0].fail, "56");
+  assert.equal(tracker.lastSpells[0].power, "0%");
+  assert.equal(tracker.lastSpells[1].power, null);
+  tracker.receive({
+    msg: "update_menu_items",
+    chunk_start: 1,
+    items: [
+      {
+        ...rows[1],
+        text: " b + 수집                            N/A        N/A       7       거의 없음",
+      },
+    ],
+  });
+  assert.equal(tracker.lastSpells[1].power, "N/A");
+  assert.equal(tracker.lastSpells[1].level, 1);
+  tracker.receive({ msg: "update_menu_items", items: [rows[0]] });
+  assert.equal(tracker.lastSpells[0].power, "0%");
+});
+test("evocable inventory includes wands and miscellaneous devices", () => {
+  assert.deepEqual(
+    Core.inventory({
+      0: { base_type: 3, name: "wand", quantity: 1 },
+      1: { base_type: 13, name: "phial", quantity: 1 },
+      2: { base_type: 7, name: "potion", quantity: 1 },
+    }).map((item) => item.category),
+    ["evoke", "evoke", "potion"],
+  );
 });

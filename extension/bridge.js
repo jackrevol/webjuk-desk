@@ -259,6 +259,19 @@
       return;
     }
     if (menu?.tag === expectedTag && tracker.complete()) {
+      if (operation.kind === "refresh") {
+        const entries = Core.spells(menu);
+        const view = entries[0]?.view;
+        if (entries.length && entries.every((entry) => entry.view === view)) {
+          operation.views ||= [];
+          if (operation.views.includes(view)) return;
+          operation.views.push(view);
+          if (operation.views.length < 2) {
+            key("!");
+            return;
+          }
+        } else if (entries.length) return;
+      }
       const pending = operation;
       operation = null;
       if (pending.kind === "refresh" || pending.kind === "refreshAbilities") {
@@ -297,7 +310,7 @@
     ) {
       operation = null;
       notice(
-        "마법 목록이 열리지 않았습니다. 배운 마법이나 게임 메시지를 확인하세요.",
+        `${abilityOperation ? "능력" : "마법"} 목록이 열리지 않았습니다. 게임 메시지를 확인하세요.`,
         true,
       );
     }

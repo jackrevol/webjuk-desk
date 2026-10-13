@@ -50,7 +50,7 @@ input:focus-visible {
   border: 1px solid var(--border);
   overflow: hidden;
 }
-.tabs {
+.panel-header {
   display: flex;
   gap: 1px;
   align-items: stretch;
@@ -58,15 +58,20 @@ input:focus-visible {
   flex-shrink: 0;
   min-height: 23px;
 }
-.tabs > [role="tab"] {
+.section-toggle {
   padding: 1px 5px;
   font-size: 11px;
   background: #111;
-  border-color: #333;
+  border: 0;
+  text-align: left;
 }
-.tabs > [aria-selected="true"] {
-  color: var(--active);
-  border-color: var(--color-6, #a50);
+.section-toggle::before {
+  content: "▾";
+  margin-right: 4px;
+  color: #888;
+}
+.section-toggle[aria-expanded="false"]::before {
+  content: "▸";
 }
 .tab-spacer {
   flex: 1;
@@ -79,12 +84,36 @@ input:focus-visible {
   border-color: #333;
 }
 .body,
-#panel-content {
+.sections,
+.inventory-section {
   display: flex;
   flex-direction: column;
   min-height: 0;
   min-width: 0;
   overflow: hidden;
+}
+.panel-header {
+  background: #161616;
+}
+.sections {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.inventory-section {
+  flex-shrink: 0;
+}
+.inventory-section + .inventory-section {
+  border-top: 1px solid var(--border);
+}
+.inventory-section .tiles {
+  max-height: 108px;
+}
+.inventory-section .spell-list {
+  max-height: 180px;
+}
+.inventory-section.section-closed {
+  flex: 0 0 auto;
 }
 .tiles {
   display: grid;
@@ -107,6 +136,49 @@ input:focus-visible {
 }
 .cell:hover {
   border-color: var(--active);
+}
+.tiles.spell-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+.spell-row {
+  height: 36px;
+}
+.spell-row .tile-button {
+  justify-content: flex-start;
+  gap: 5px;
+  padding-right: 12px;
+}
+.spell-row .tile {
+  flex-shrink: 0;
+}
+.spell-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+.spell-metrics {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.spell-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 32px;
+}
+.metric-label {
+  color: #888;
+  font-size: 9px;
+  line-height: 11px;
+}
+.metric-value {
+  color: var(--color-15, #fff);
+  font-size: 11px;
 }
 .cell.equipped {
   border-color: var(--color-2, #080);

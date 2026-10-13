@@ -8,10 +8,10 @@
   const labels = ["낮음", "보통", "위험", "매우 위험"];
   function skillLevels(lines) {
     const aliases = {
-      throwing: "Throwing|투척",
-      evocations: "Evocations|발동",
-      invocations: "Invocations|기도",
-      fighting: "Fighting|전투",
+      throwing: "Throwing|투척술|투척",
+      evocations: "Evocations|발동술|발동",
+      invocations: "Invocations|기도술|기도",
+      fighting: "Fighting|전투 기술|전투",
       armour: "Armour|갑옷술|갑옷",
       dodging: "Dodging|회피술|회피",
       shields: "Shields|방패술|방패",
@@ -218,6 +218,9 @@
       }
     }
     for (const spell of state.spells || []) {
+      // A low failure rate does not make item retrieval an attack option.
+      if (/^(?:Apportation|수집|마법의 수집)$/i.test(spell.name.trim()))
+        continue;
       const failure = Number(spell.fail);
       if (
         spell.fail == null ||

@@ -6,13 +6,11 @@
     CHANNEL = "webjuk-desk-v1";
   let prefs = Core.settings(),
     state = { items: [], spells: [], ready: false };
-  let tab = "items",
-    filter = "all",
-    search = "",
-    recording = null,
+  const sections = ["spells", "missiles", "evokes", "items"];
+  const closedSections = new Set();
+  let recording = null,
     listSignature = "";
   let showSettings = false,
-    noticeTimer,
     adviceSignature = "";
   const host = document.createElement("div");
   host.id = "webjuk-desk";
@@ -23,20 +21,31 @@
   shadow.append(sheet);
   const app = document.createElement("section");
   app.className = "native-panel";
-  app.setAttribute("aria-label", "마법·소지품·투척물");
+  app.setAttribute("aria-label", "마법·소지품·투척물·발동 아이템");
   app.innerHTML = `
-    <nav class="tabs" role="tablist" aria-label="게임 패널">
-      <button role="tab" id="items-tab" data-tab="items" aria-controls="panel-content" title="인벤토리 (Alt I)">소지품</button>
-      <button role="tab" id="spells-tab" data-tab="spells" aria-controls="panel-content" title="마법 (Alt M)">마법</button>
-      <button role="tab" id="missiles-tab" data-tab="missiles" aria-controls="panel-content" title="투척물 (Alt T)">투척</button>
-      <span class="tab-spacer"></span><button class="tool" data-ui="settings" title="확장 설정" aria-label="확장 설정">⚙</button>
-      <button class="tool" data-ui="refresh" title="마법 목록 갱신" aria-label="마법 목록 불러오기" hidden>↻</button>
+    <header class="panel-header">
+      <button id="spells-heading" class="section-toggle" data-section="spells" aria-controls="spells-content" title="마법 접기·펼치기 (Alt M)">마법</button>
+      <span class="tab-spacer"></span><button class="tool" data-ui="refresh" title="마법 성공률·위력 갱신" aria-label="마법 목록 불러오기">↻</button><button class="tool" data-ui="settings" title="확장 설정" aria-label="확장 설정">⚙</button>
       <button class="tool" data-ui="collapse" title="접기·펼치기 (Alt &#96;)" aria-label="패널 접기·펼치기">−</button>
-    </nav>
+    </header>
     <div class="body"><div class="quick-slots" aria-label="빠른 슬롯" hidden></div>
-      <section id="panel-content" role="tabpanel" aria-labelledby="items-tab">
-        <div class="tiles" aria-label="소지품 목록"></div>
-      </section>
+      <div class="sections">
+        <section class="inventory-section" data-pane="spells" aria-labelledby="spells-heading">
+          <div id="spells-content" class="tiles spell-list" aria-label="마법 목록"></div>
+        </section>
+        <section class="inventory-section" data-pane="missiles" aria-labelledby="missiles-heading">
+          <header class="panel-header"><button id="missiles-heading" class="section-toggle" data-section="missiles" aria-controls="missiles-content" title="투척물 접기·펼치기 (Alt T)">투척</button></header>
+          <div id="missiles-content" class="tiles" aria-label="투척물 목록"></div>
+        </section>
+        <section class="inventory-section" data-pane="evokes" aria-labelledby="evokes-heading">
+          <header class="panel-header"><button id="evokes-heading" class="section-toggle" data-section="evokes" aria-controls="evokes-content" title="발동 아이템 접기·펼치기 (Alt E)">발동</button></header>
+          <div id="evokes-content" class="tiles" aria-label="발동 아이템 목록"></div>
+        </section>
+        <section class="inventory-section" data-pane="items" aria-labelledby="items-heading">
+          <header class="panel-header"><button id="items-heading" class="section-toggle" data-section="items" aria-controls="items-content" title="소지품 접기·펼치기 (Alt I)">소지품</button></header>
+          <div id="items-content" class="tiles" aria-label="소지품 목록"></div>
+        </section>
+      </div>
       <section class="settings" hidden aria-label="확장 설정">
         <label><span>집중 화면 (채팅 숨김)</span><input type="checkbox" data-pref="focus"></label>
         <button class="text-button" data-ui="skills" title="기술 수치 갱신 · 훈련 설정은 바꾸지 않음">기술 ↻</button><button class="text-button" data-ui="abilities" title="능력 목록 갱신">능력 ↻</button>
@@ -180,18 +189,10 @@
       node.append(button);
     });
   }
-  function empty(title, description, refresh = false) {
+  function empty(list, title, description) {
     const node = el("div", "empty");
     node.title = `${title} · ${description}`;
-    if (refresh) {
-      const button = el("button", "tool", "↻");
-      button.title = "마법 목록 불러오기";
-      button.setAttribute("aria-label", "마법 목록 불러오기");
-      button.disabled = !state.ready || state.busy;
-      button.addEventListener("click", () => action({ type: "refreshSpells" }));
-      node.append(button);
-    }
-    $(".tiles").append(node);
+    list.append(node);
   }
   function renderList() {
     const signature = JSON.stringify([
@@ -204,44 +205,40 @@
       state.watching,
       state.spellsLoaded,
       prefs.quickSlots,
-      tab,
-      filter,
-      search,
     ]);
     if (signature === listSignature) return;
     listSignature = signature;
-    const list = $(".tiles");
+    sections.forEach(renderSection);
+  }
+  function renderSection(tab) {
+    const list = $(`#${tab}-content`);
     list.replaceChildren();
-    list.setAttribute(
-      "aria-label",
-      tab === "spells"
-        ? "마법 목록"
-        : tab === "missiles"
-          ? "투척물 목록"
-          : "소지품 목록",
-    );
     if (!state.connected || !state.inGame) {
-      empty("게임 연결을 기다리는 중", "게임을 시작하면 소지품이 표시됩니다.");
+      empty(
+        list,
+        "게임 연결을 기다리는 중",
+        "게임을 시작하면 소지품이 표시됩니다.",
+      );
       return;
     }
     if (tab === "spells" && !state.spellsLoaded) {
       empty(
+        list,
         "마법 목록을 불러오세요",
-        "마법을 배운 뒤 ↻로 갱신하세요. 실패율은 마지막 갱신 시점 기준입니다.",
-        !state.watching,
+        "↻로 성공률·위력을 갱신하세요. 수치는 마지막 갱신 시점 기준입니다.",
       );
       return;
     }
     const items = (tab === "spells" ? state.spells : state.items).filter(
       (item) =>
-        item.name.toLowerCase().includes(search.toLowerCase()) &&
         (tab !== "missiles" || item.category === "missile") &&
-        (tab !== "items" || filter === "all" || item.category === filter),
+        (tab !== "evokes" || item.category === "evoke"),
     );
     if (!items.length) {
       empty(
+        list,
         tab === "missiles" ? "투척물이 없습니다" : "표시할 항목이 없습니다",
-        "현재 소지품·검색 조건을 확인하세요.",
+        "현재 목록에 해당 항목이 없습니다.",
       );
       return;
     }
@@ -263,6 +260,28 @@
         String(!state.ready || !!state.busy),
       );
       button.append(imageFor(item, kind), el("kbd", "letter", item.letter));
+      if (kind === "spell") {
+        cell.classList.add("spell-row");
+        const metrics = el("span", "spell-metrics");
+        const success = item.fail == null ? "—" : `${100 - Number(item.fail)}%`;
+        const power = item.power ?? "—";
+        for (const [label, value] of [
+          ["성공률", success],
+          ["위력", power],
+        ]) {
+          const metric = el("span", "spell-metric");
+          metric.append(
+            el("span", "metric-label", label),
+            el("span", "metric-value", value),
+          );
+          metrics.append(metric);
+        }
+        button.append(el("span", "spell-name", item.name), metrics);
+        button.setAttribute(
+          "aria-label",
+          `${item.name} 시전 · 성공률 ${success} · 위력 ${power}`,
+        );
+      }
       if (item.quantity > 1 || item.charges != null)
         button.append(el("span", "quantity", item.charges ?? item.quantity));
       button.addEventListener("click", (event) =>
@@ -315,7 +334,7 @@
     const top = host.getBoundingClientRect().top;
     host.style.setProperty(
       "--panel-height",
-      `${Math.max(26, Math.min(220, window.innerHeight - top - 6))}px`,
+      `${Math.max(26, Math.min(520, window.innerHeight - top - 6))}px`,
     );
   }
   function renderSettings() {
@@ -326,6 +345,7 @@
       ["spells", "마법"],
       ["inventory", "소지품"],
       ["missiles", "투척"],
+      ["evokes", "발동"],
       ["toggle", "접기·펼치기"],
     ]) {
       const row = el("label");
@@ -430,31 +450,38 @@
     mount();
     $(".body").hidden = prefs.collapsed;
     $("[data-ui=collapse]").textContent = prefs.collapsed ? "+" : "−";
-    for (const button of $$("[data-tab]")) {
-      const active = button.dataset.tab === tab;
-      button.setAttribute("aria-selected", String(active));
-      button.tabIndex = active ? 0 : -1;
+    for (const button of $$("[data-section]")) {
+      const closed = closedSections.has(button.dataset.section);
+      button.setAttribute("aria-expanded", String(!closed && !prefs.collapsed));
+      $(`#${button.dataset.section}-content`).hidden = closed;
+      $(`[data-pane=${button.dataset.section}]`).classList.toggle(
+        "section-closed",
+        closed,
+      );
     }
-    $("#panel-content").hidden = showSettings;
+    $(".sections").hidden = showSettings;
     $(".settings").hidden = !showSettings;
-    $("#panel-content").setAttribute("aria-labelledby", `${tab}-tab`);
-    $("[data-ui=refresh]").hidden = tab !== "spells";
     $("[data-ui=refresh]").disabled = !state.ready || state.busy;
     renderSlots();
     renderList();
     renderAdvice();
   }
-  function switchTab(next) {
-    tab = next;
+  function focusSection(next) {
+    closedSections.delete(next);
     showSettings = false;
     if (prefs.collapsed) setPrefs({ collapsed: false });
     render();
+    $(`[data-section=${next}]`).focus();
   }
   app.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button) return;
-    if (button.dataset.tab) {
-      switchTab(button.dataset.tab);
+    if (button.dataset.section) {
+      const name = button.dataset.section;
+      if (closedSections.has(name)) closedSections.delete(name);
+      else closedSections.add(name);
+      if (prefs.collapsed) setPrefs({ collapsed: false });
+      render();
       return;
     }
     if (button.dataset.command) {
@@ -574,7 +601,7 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       if (name === "toggle") setPrefs({ collapsed: !prefs.collapsed });
-      else if (name) switchTab(name === "inventory" ? "items" : name);
+      else if (name) focusSection(name === "inventory" ? "items" : name);
       else {
         const slot = prefs.quickSlots[Number(quick[1]) - 1];
         if (!slot) {
@@ -588,14 +615,17 @@
     },
     true,
   );
-  $(".tabs").addEventListener("keydown", (event) => {
-    if (["ArrowLeft", "ArrowRight"].includes(event.key)) {
+  app.addEventListener("keydown", (event) => {
+    const section = event.target.closest("[data-section]")?.dataset.section;
+    if (section && ["ArrowUp", "ArrowDown"].includes(event.key)) {
       event.preventDefault();
-      const tabs = ["items", "spells", "missiles"];
-      switchTab(
-        tabs[(tabs.indexOf(tab) + (event.key === "ArrowRight" ? 1 : 2)) % 3],
-      );
-      $(`[data-tab=${tab}]`).focus();
+      const next =
+        sections[
+          (sections.indexOf(section) +
+            (event.key === "ArrowDown" ? 1 : sections.length - 1)) %
+            sections.length
+        ];
+      $(`[data-section=${next}]`).focus();
     }
   });
   window.addEventListener("message", (event) => {

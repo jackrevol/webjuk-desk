@@ -117,3 +117,26 @@ test("resistance parser reads only explicit game symbols and never guesses zero"
   );
   assert.deepEqual(Advisor.resistances("Untranslated monster description"), {});
 });
+test("Korean skill screen parses skill suffixes, zero levels and both columns", () => {
+  const levels = Advisor.skillLevels([
+    "a + 전투 기술        5.4    5.0    +1     k + 주문 시전술      0.0    1.4    -2",
+    "f - 투척술           0.0    1.4    -2     o + 발동술           0.0    0.8    +1",
+    "p - 기도술           3.2    1.0     0",
+  ]);
+  assert.deepEqual(levels, {
+    fighting: 5.4,
+    spellcasting: 0,
+    throwing: 0,
+    evocations: 0,
+    invocations: 3.2,
+  });
+});
+test("item retrieval spells are excluded from monster combat candidates", () => {
+  for (const name of ["Apportation", "수집", "마법의 수집"]) {
+    const report = Advisor.advise(
+      { ...normal, spells: [{ id: name, name, fail: 1, level: 1 }] },
+      monster,
+    );
+    assert.equal(report.candidates.length, 0);
+  }
+});

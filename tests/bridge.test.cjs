@@ -185,13 +185,40 @@ test("disconnected, watching, menu, target mode and stale items never send actio
     assert.equal(h.sent.length, 0);
   }
 });
-test("refresh captures a complete spell list then cancels without casting", () => {
+test("refresh reads failure and power views then escapes without casting", () => {
   const h = harness();
   h.act({ type: "refreshSpells" });
   assert.deepEqual(h.sent, [{ type: "input", text: "I" }]);
   spellMenu(h);
+  assert.equal(h.sent.at(-1).text, "!");
+  h.tick();
+  assert.equal(h.sent.length, 2);
+  h.receive({
+    msg: "update_menu_items",
+    items: [{ ...spell(), text: "a - Magic Dart    0%    1d4    7    Silent" }],
+  });
   assert.equal(h.sent.at(-1).keycode, 27);
   assert.equal(h.lastState().spells[0].name, "Magic Dart");
+  assert.equal(h.lastState().spells[0].fail, "1");
+  assert.equal(h.lastState().spells[0].power, "0%");
+});
+test("refresh also supports a power view arriving first", () => {
+  const h = harness();
+  h.act({ type: "refreshSpells" });
+  h.setMode(7);
+  h.receive({
+    msg: "menu",
+    tag: "spell",
+    total_items: 1,
+    items: [
+      { ...spell(), text: "a - Magic Dart    32%    1d6    7    Silent" },
+    ],
+  });
+  assert.equal(h.sent.at(-1).text, "!");
+  h.receive({ msg: "update_menu_items", items: [spell()] });
+  assert.equal(h.sent.at(-1).keycode, 27);
+  assert.equal(h.lastState().spells[0].fail, "1");
+  assert.equal(h.lastState().spells[0].power, "32%");
 });
 test("casting waits for prompt and live menu and resolves a changed spell letter", () => {
   const h = harness();
@@ -271,6 +298,7 @@ test("ability refresh and activation resolve the latest server hotkey", () => {
     items: [{ ...spell(), text: "a - Breathe Fire    3%" }],
   });
   assert.equal(h.sent.at(-1).keycode, 27);
+  assert.equal(h.lastState().abilities[0].fail, "3");
   h.receive({ msg: "close_all_menus" });
   h.setMode(1);
   h.act({ type: "castAbility", id: "5:101" });
