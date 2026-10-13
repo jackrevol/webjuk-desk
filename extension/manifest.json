@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "웹죽 데스크 · WebJuk Desk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "네멜렉스 웹죽의 마법과 인벤토리를 한눈에. 실시간 소지품, 마법 패널, 빠른 슬롯과 집중 화면.",
   "minimum_chrome_version": "111",
   "permissions": ["storage"],

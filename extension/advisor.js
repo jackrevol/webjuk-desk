@@ -225,20 +225,11 @@
       if (calculation.score != null) score = calculation.score;
       else score = Math.min(score, 10);
       why += ` · ${calculation.reason || "위력 미조회"}`;
-      const type = element(item.name),
+      const definition = Combat.definition(item),
+        type = definition ? null : element(item.name),
         resistance = type ? res[type] : undefined;
-      if (
-        resistance >= 3 &&
-        ![
-          "ICE",
-          "THUNDER",
-          "LAVA",
-          "WATER",
-          "POISON_ARROW",
-          "MERCURY",
-        ].includes(Combat.definition(item)?.flavour)
-      )
-        return;
+      // 원본 정의가 있는 공격의 저항·부분 면역은 Combat에서 타격별로 판정합니다.
+      if (resistance >= 3) return;
       if (resistance > 0) {
         score -= 25;
         why += " · 해당 속성 저항 있음";

@@ -86,6 +86,9 @@
           distance,
           resists: monsterDetails.get(mon.id)?.resists || {},
           will: monsterDetails.get(mon.id)?.will || null,
+          ac: monsterDetails.get(mon.id)?.ac || null,
+          ev: monsterDetails.get(mon.id)?.ev || null,
+          sh: monsterDetails.get(mon.id)?.sh || null,
         },
       ];
     });
@@ -175,6 +178,7 @@
       for (const mon of monsterSnapshot(modules()))
         if (title.includes(mon.name.toLowerCase())) {
           monsterDetails.set(mon.id, {
+            ...Combat.defences(Core.plain(data.body)),
             resists: Advisor.resistances(Core.plain(data.body)),
             will: Combat.willpower(Core.plain(data.body)),
             title,

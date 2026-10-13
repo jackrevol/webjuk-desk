@@ -179,6 +179,23 @@ const spell = (key = 97) => ({
   hotkeys: [key],
   tiles: [{ tex: 5, t: 101 }],
 });
+test("monster descriptions feed bounded AC and EV into state without sending game actions", () => {
+  const h = harness();
+  assert.equal(h.lastState().monsters[0].ac, null);
+  h.receive({ msg: "ui-push", type: "describe-monster", title: "Adder", body:
+    "Max HP    Will    AC    EV    SH\n11        none    +     ++    none\nrF: +..  rC: ..." });
+  const monster = h.lastState().monsters[0];
+  assert.deepEqual(Array.from(monster.ac), [1, 5]);
+  assert.deepEqual(Array.from(monster.ev), [6, 10]);
+  assert.deepEqual(Array.from(monster.sh), [0, 0]);
+  assert.deepEqual(Array.from(monster.will), [0, 0]);
+  assert.equal(monster.resists.fire, 1);
+  assert.equal(monster.resists.cold, 0);
+  assert.equal(h.sent.length, 0);
+  h.receive({ msg: "game_client", version: "test" });
+  assert.equal(h.lastState().monsters[0].ac, null);
+  assert.equal(h.lastState().monsters[0].ev, null);
+});
 function spellMenu(h, key = 97) {
   h.setMode(7);
   h.receive({ msg: "menu", tag: "spell", total_items: 1, items: [spell(key)] });

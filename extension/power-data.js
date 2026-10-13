@@ -1,4 +1,4 @@
-/* Factual metadata from crawl/crawl 0a046544fd: spl-data.h, spl-zap.cc, zap-data.h.
+/* Factual metadata from crawl/crawl 0a046544fd: spl-data.h, spl-zap.cc, zap-data.h, spl-cast.cc.
  * Regenerate with scripts/generate-power-data.cjs; calculations use server descriptions. */
 (function (root) {
   const data = {
@@ -12,6 +12,7 @@
         flags: ["WL_check"],
         flavour: null,
         hex: [0, 3, 2],
+        defence: null,
       },
       SPELL_MAGIC_DART: {
         name: "Magic Dart",
@@ -21,6 +22,13 @@
         flags: ["dir_or_target", "needs_tracer", "direct_damage_only"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_FIREBALL: {
         name: "Fireball",
@@ -30,6 +38,13 @@
         flags: ["dir_or_target", "needs_tracer", "direct_damage_only"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_APPORTATION: {
         name: "Apportation",
@@ -39,6 +54,7 @@
         flags: ["target", "obj", "not_self"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLASTMOTE: {
         name: "Volatile Blastmotes",
@@ -48,6 +64,13 @@
         flags: ["destructive"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DIG: {
         name: "Dig",
@@ -57,6 +80,7 @@
         flags: ["dir_or_target", "not_self", "aim_at_space"],
         flavour: "DIGGING",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BOLT_OF_FIRE: {
         name: "Bolt of Fire",
@@ -65,7 +89,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "FIRE",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_BOLT_OF_COLD: {
         name: "Bolt of Cold",
@@ -74,7 +105,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "COLD",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_LIGHTNING_BOLT: {
         name: "Lightning Bolt",
@@ -83,7 +121,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "ELECTRICITY",
-        hex: [7, 1, 40],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: false,
+          accuracy: [7, 1, 40],
+          shield: false,
+        },
       },
       SPELL_ARCJOLT: {
         name: "Arcjolt",
@@ -91,8 +136,15 @@
         level: 5,
         cap: 200,
         flags: ["direct_damage_only"],
-        flavour: null,
+        flavour: "ELECTRICITY",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_PLASMA_BEAM: {
         name: "Plasma Beam",
@@ -101,7 +153,24 @@
         cap: 200,
         flags: ["noisy", "destructive", "direct_damage_only", "needs_target"],
         flavour: "FIRE",
-        hex: [7, 1, 40],
+        hex: [0, 1, 1],
+        defence: null,
+        components: [
+          {
+            flavour: "FIRE",
+            ac: "normal",
+            automatic: false,
+            accuracy: [7, 1, 40],
+            shield: false,
+          },
+          {
+            flavour: "ELECTRICITY",
+            ac: "half",
+            automatic: false,
+            accuracy: [7, 1, 40],
+            shield: false,
+          },
+        ],
       },
       SPELL_PERMAFROST_ERUPTION: {
         name: "Permafrost Eruption",
@@ -111,6 +180,23 @@
         flags: ["destructive", "needs_target"],
         flavour: "COLD",
         hex: [0, 1, 1],
+        defence: null,
+        components: [
+          {
+            flavour: "MMISSILE",
+            ac: "normal",
+            automatic: true,
+            accuracy: null,
+            shield: false,
+          },
+          {
+            flavour: "COLD",
+            ac: "none",
+            automatic: true,
+            accuracy: null,
+            shield: false,
+          },
+        ],
       },
       SPELL_BLINKBOLT: {
         name: "Blinkbolt",
@@ -119,7 +205,14 @@
         cap: 200,
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "ELECTRICITY",
-        hex: [16, 1, 4],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: false,
+          accuracy: [16, 1, 4],
+          shield: false,
+        },
       },
       SPELL_ELECTRIC_CHARGE: {
         name: "Vhi's Electric Charge",
@@ -129,6 +222,7 @@
         flags: ["noisy", "dir_or_target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ELECTROLUNGE: {
         name: "Vhi's Electrolunge",
@@ -138,6 +232,7 @@
         flags: ["noisy", "target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BOLT_OF_MAGMA: {
         name: "Bolt of Magma",
@@ -146,7 +241,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "LAVA",
-        hex: [8, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "LAVA",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 25],
+          shield: false,
+        },
       },
       SPELL_POLYMORPH: {
         name: "Polymorph",
@@ -156,6 +258,7 @@
         flags: ["dir_or_target", "chaotic", "needs_tracer", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SLOW: {
         name: "Slow",
@@ -165,6 +268,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HASTE: {
         name: "Haste",
@@ -174,6 +278,7 @@
         flags: ["helpful", "hasty", "selfench", "monster"],
         flavour: "HASTE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PETRIFY: {
         name: "Petrify",
@@ -183,6 +288,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CONFUSE: {
         name: "Confuse",
@@ -192,6 +298,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_INVISIBILITY: {
         name: "Invisibility",
@@ -201,6 +308,7 @@
         flags: ["helpful", "selfench", "escape", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THROW_FLAME: {
         name: "Throw Flame",
@@ -209,7 +317,14 @@
         cap: 50,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "FIRE",
-        hex: [8, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 10],
+          shield: true,
+        },
       },
       SPELL_THROW_FROST: {
         name: "Throw Frost",
@@ -218,7 +333,14 @@
         cap: 50,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "COLD",
-        hex: [8, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 10],
+          shield: true,
+        },
       },
       SPELL_DISJUNCTION: {
         name: "Disjunction",
@@ -228,6 +350,7 @@
         flags: ["escape"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FREEZING_CLOUD: {
         name: "Freezing Cloud",
@@ -235,8 +358,15 @@
         level: 5,
         cap: 200,
         flags: ["target", "needs_tracer", "cloud"],
-        flavour: null,
+        flavour: "COLD",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_FREEZING_GUST: {
         name: "Freezing Gust",
@@ -245,7 +375,8 @@
         cap: 200,
         flags: ["target", "needs_tracer", "cloud", "monster"],
         flavour: "COLD",
-        hex: [17, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MEPHITIC_CLOUD: {
         name: "Mephitic Cloud",
@@ -255,6 +386,7 @@
         flags: ["dir_or_target", "needs_tracer", "cloud"],
         flavour: "MEPHITIC",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_VENOM_BOLT: {
         name: "Venom Bolt",
@@ -263,7 +395,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "POISON",
-        hex: [8, 1, 20],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "POISON",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 20],
+          shield: false,
+        },
       },
       SPELL_OLGREBS_TOXIC_RADIANCE: {
         name: "Olgreb's Toxic Radiance",
@@ -273,6 +412,7 @@
         flags: ["destructive"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_TELEPORT_OTHER: {
         name: "Teleport Other",
@@ -282,6 +422,7 @@
         flags: ["target", "not_self", "escape", "WL_check"],
         flavour: "TELEPORT",
         hex: [0, 3, 2],
+        defence: null,
       },
       SPELL_DEATHS_DOOR: {
         name: "Death's Door",
@@ -291,6 +432,7 @@
         flags: ["no_ghost"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MASS_CONFUSION: {
         name: "Mass Confusion",
@@ -300,6 +442,7 @@
         flags: ["WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SMITING: {
         name: "Smiting",
@@ -309,6 +452,7 @@
         flags: ["target", "not_self"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_SMALL_MAMMAL: {
         name: "Summon Small Mammal",
@@ -318,6 +462,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ABJURATION: {
         name: "Abjuration",
@@ -327,6 +472,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BOLT_OF_DRAINING: {
         name: "Bolt of Draining",
@@ -335,7 +481,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "NEG",
-        hex: [8, 1, 20],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "NEG",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 20],
+          shield: false,
+        },
       },
       SPELL_LEHUDIBS_CRYSTAL_SPEAR: {
         name: "Lehudib's Crystal Spear",
@@ -344,7 +497,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "direct_damage_only"],
         flavour: "MMISSILE",
-        hex: [10, 1, 15],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 15],
+          shield: true,
+        },
       },
       SPELL_POLAR_VORTEX: {
         name: "Polar Vortex",
@@ -352,8 +512,15 @@
         level: 9,
         cap: 200,
         flags: ["destructive"],
-        flavour: null,
+        flavour: "ICE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "proportional",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_POISONOUS_CLOUD: {
         name: "Poisonous Cloud",
@@ -362,7 +529,14 @@
         cap: 200,
         flags: ["target", "needs_tracer", "cloud", "monster"],
         flavour: "POISON",
-        hex: [6, 1, 6],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "POISON",
+          ac: "normal",
+          automatic: false,
+          accuracy: [6, 1, 6],
+          shield: false,
+        },
       },
       SPELL_FIRE_STORM: {
         name: "Fire Storm",
@@ -372,6 +546,13 @@
         flags: ["target", "needs_tracer"],
         flavour: "LAVA",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "LAVA",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_CALL_DOWN_DAMNATION: {
         name: "Call Down Damnation",
@@ -381,6 +562,7 @@
         flags: ["target", "unholy", "needs_tracer", "monster"],
         flavour: "DAMNATION",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CALL_DOWN_LIGHTNING: {
         name: "Call Down Lightning",
@@ -389,7 +571,14 @@
         cap: 200,
         flags: ["target", "monster"],
         flavour: "ELECTRICITY",
-        hex: [7, 1, 40],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: false,
+          accuracy: [7, 1, 40],
+          shield: false,
+        },
       },
       SPELL_BLINK: {
         name: "Blink",
@@ -399,6 +588,7 @@
         flags: ["escape", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLINK_RANGE: {
         name: "Blink Range",
@@ -408,6 +598,7 @@
         flags: ["escape", "monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLINK_AWAY: {
         name: "Blink Away",
@@ -417,6 +608,7 @@
         flags: ["escape", "monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLINK_CLOSE: {
         name: "Blink Close",
@@ -426,6 +618,7 @@
         flags: ["monster", "target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ISKENDERUNS_MYSTIC_BLAST: {
         name: "Iskenderun's Mystic Blast",
@@ -435,6 +628,13 @@
         flags: ["none"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SUMMON_HORRIBLE_THINGS: {
         name: "Summon Horrible Things",
@@ -444,6 +644,7 @@
         flags: ["unholy", "chaotic", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MALIGN_GATEWAY: {
         name: "Malign Gateway",
@@ -453,6 +654,7 @@
         flags: ["unholy", "chaotic"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CHARMING: {
         name: "Charm",
@@ -462,6 +664,7 @@
         flags: ["dir_or_target", "not_self", "needs_tracer", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ANIMATE_DEAD: {
         name: "Animate Dead",
@@ -471,6 +674,7 @@
         flags: ["helpful", "no_ghost"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PAIN: {
         name: "Pain",
@@ -480,6 +684,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: "PAIN",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SOUL_SPLINTER: {
         name: "Soul Splinter",
@@ -489,6 +694,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "not_self"],
         flavour: "SOUL_SPLINTER",
         hex: [6, 1, 2],
+        defence: null,
       },
       SPELL_VAMPIRIC_DRAINING: {
         name: "Vampiric Draining",
@@ -498,6 +704,13 @@
         flags: ["dir_or_target", "not_self"],
         flavour: "VAMPIRIC_DRAINING",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "VAMPIRIC_DRAINING",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_HAUNT: {
         name: "Haunt",
@@ -507,6 +720,7 @@
         flags: ["target", "not_self", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MARTYRS_KNELL: {
         name: "Martyr's Knell",
@@ -516,6 +730,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BORGNJORS_REVIVIFICATION: {
         name: "Borgnjor's Revivification",
@@ -525,20 +740,23 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FREEZE: {
         name: "Freeze",
         tile: "FREEZE",
         level: 1,
         cap: 25,
-        flags: [
-          "dir_or_target",
-          "not_self",
-          "destructive",
-          "direct_damage_only",
-        ],
+        flags: ["dir_or_target", "not_self", "destructive", "direct_damage_only"],
         flavour: "COLD",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_OZOCUBUS_REFRIGERATION: {
         name: "Ozocubu's Refrigeration",
@@ -548,6 +766,13 @@
         flags: ["destructive"],
         flavour: "COLD",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_STICKY_FLAME: {
         name: "Sticky Flame",
@@ -557,6 +782,13 @@
         flags: ["dir_or_target", "needs_tracer", "destructive"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SUMMON_ICE_BEAST: {
         name: "Summon Ice Beast",
@@ -566,6 +798,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_OZOCUBUS_ARMOUR: {
         name: "Ozocubu's Armour",
@@ -575,6 +808,7 @@
         flags: ["no_ghost", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CALL_IMP: {
         name: "Call Imp",
@@ -584,6 +818,7 @@
         flags: ["unholy"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DEFLECT_MISSILES: {
         name: "Deflect Missiles",
@@ -593,6 +828,7 @@
         flags: ["monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BERSERKER_RAGE: {
         name: "Berserker Rage",
@@ -602,6 +838,7 @@
         flags: ["hasty", "monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DISPEL_UNDEAD: {
         name: "Dispel Undead",
@@ -610,7 +847,14 @@
         cap: 100,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "DISPEL_UNDEAD",
-        hex: [0, 3, 2],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "DISPEL_UNDEAD",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_POISON_ARROW: {
         name: "Poison Arrow",
@@ -619,7 +863,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "POISON_ARROW",
-        hex: [5, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "POISON_ARROW",
+          ac: "normal",
+          automatic: false,
+          accuracy: [5, 1, 10],
+          shield: true,
+        },
       },
       SPELL_BANISHMENT: {
         name: "Banishment",
@@ -636,6 +887,7 @@
         ],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_STING: {
         name: "Sting",
@@ -644,7 +896,14 @@
         cap: 25,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "POISON_ARROW",
-        hex: [8, 1, 5],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "POISON_ARROW",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 5],
+          shield: true,
+        },
       },
       SPELL_SUBLIMATION_OF_BLOOD: {
         name: "Sublimation of Blood",
@@ -654,6 +913,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_TUKIMAS_DANCE: {
         name: "Tukima's Dance",
@@ -663,6 +923,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "not_self"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_DEMON: {
         name: "Summon Demon",
@@ -672,6 +933,7 @@
         flags: ["unholy", "mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_GREATER_DEMON: {
         name: "Summon Greater Demon",
@@ -681,6 +943,7 @@
         flags: ["unholy", "mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PUTREFACTION: {
         name: "Cigotuvi's Putrefaction",
@@ -690,6 +953,7 @@
         flags: ["target", "unclean"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_IRON_SHOT: {
         name: "Iron Shot",
@@ -698,7 +962,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [7, 1, 15],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [7, 1, 15],
+          shield: true,
+        },
       },
       SPELL_BOMBARD: {
         name: "Bombard",
@@ -707,7 +978,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "MMISSILE",
-        hex: [7, 1, 15],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [7, 1, 15],
+          shield: true,
+        },
       },
       SPELL_STONE_ARROW: {
         name: "Stone Arrow",
@@ -716,7 +994,14 @@
         cap: 50,
         flags: ["dir_or_target", "needs_tracer", "direct_damage_only"],
         flavour: "MMISSILE",
-        hex: [8, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 10],
+          shield: true,
+        },
       },
       SPELL_SHOCK: {
         name: "Shock",
@@ -725,7 +1010,14 @@
         cap: 25,
         flags: ["dir_or_target", "needs_tracer", "direct_damage_only"],
         flavour: "ELECTRICITY",
-        hex: [8, 1, 7],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: false,
+          accuracy: [8, 1, 7],
+          shield: false,
+        },
       },
       SPELL_SWIFTNESS: {
         name: "Swiftness",
@@ -735,6 +1027,7 @@
         flags: ["hasty", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DEBUGGING_RAY: {
         name: "Debugging Ray",
@@ -744,6 +1037,13 @@
         flags: ["dir_or_target", "testing"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_AGONISING_TOUCH: {
         name: "Agonising Touch",
@@ -753,6 +1053,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: "AGONY",
         hex: [0, 5, 1],
+        defence: null,
       },
       SPELL_CURSE_OF_AGONY: {
         name: "Curse of Agony",
@@ -762,6 +1063,7 @@
         flags: ["dir_or_target", "not_self", "needs_tracer", "WL_check"],
         flavour: "CURSE_OF_AGONY",
         hex: [0, 5, 2],
+        defence: null,
       },
       SPELL_MINDBURST: {
         name: "Mindburst",
@@ -777,6 +1079,13 @@
         ],
         flavour: "MINDBURST",
         hex: [0, 5, 2],
+        defence: {
+          flavour: "MINDBURST",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DEATH_CHANNEL: {
         name: "Death Channel",
@@ -786,6 +1095,7 @@
         flags: ["helpful", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SYMBOL_OF_TORMENT: {
         name: "Symbol of Torment",
@@ -795,6 +1105,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SIPHON_ESSENCE: {
         name: "Siphon Essence",
@@ -804,6 +1115,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THROW_ICICLE: {
         name: "Throw Icicle",
@@ -812,7 +1124,14 @@
         cap: 100,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "ICE",
-        hex: [9, 1, 12],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [9, 1, 12],
+          shield: true,
+        },
       },
       SPELL_AIRSTRIKE: {
         name: "Airstrike",
@@ -822,6 +1141,13 @@
         flags: ["target", "not_self", "destructive", "direct_damage_only"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_MOMENTUM_STRIKE: {
         name: "Momentum Strike",
@@ -830,7 +1156,14 @@
         cap: 50,
         flags: ["target", "not_self", "direct_damage_only"],
         flavour: "MMISSILE",
-        hex: [9, 1, 12],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [9, 1, 12],
+          shield: true,
+        },
       },
       SPELL_SHADOW_CREATURES: {
         name: "Shadow Creatures",
@@ -840,6 +1173,7 @@
         flags: ["mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CONFUSING_TOUCH: {
         name: "Confusing Touch",
@@ -849,6 +1183,7 @@
         flags: ["selfench", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PASSWALL: {
         name: "Passwall",
@@ -858,6 +1193,7 @@
         flags: ["target", "escape", "not_self", "silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_IGNITE_POISON: {
         name: "Ignite Poison",
@@ -867,6 +1203,7 @@
         flags: ["destructive"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CALL_CANINE_FAMILIAR: {
         name: "Call Canine Familiar",
@@ -876,6 +1213,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_DRAGON: {
         name: "Summon Dragon",
@@ -885,21 +1223,17 @@
         flags: ["mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HIBERNATION: {
         name: "Ensorcelled Hibernation",
         tile: "ENSORCELLED_HIBERNATION",
         level: 2,
         cap: 50,
-        flags: [
-          "dir_or_target",
-          "not_self",
-          "needs_tracer",
-          "WL_check",
-          "silent",
-        ],
+        flags: ["dir_or_target", "not_self", "needs_tracer", "WL_check", "silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ENGLACIATION: {
         name: "Metabolic Englaciation",
@@ -909,6 +1243,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SILENCE: {
         name: "Silence",
@@ -918,6 +1253,7 @@
         flags: ["silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHATTER: {
         name: "Shatter",
@@ -927,6 +1263,7 @@
         flags: ["destructive"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DISPERSAL: {
         name: "Dispersal",
@@ -936,6 +1273,7 @@
         flags: ["escape"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DISCHARGE: {
         name: "Static Discharge",
@@ -943,8 +1281,15 @@
         level: 2,
         cap: 50,
         flags: ["direct_damage_only"],
-        flavour: null,
+        flavour: "ELECTRICITY",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_CORONA: {
         name: "Corona",
@@ -954,6 +1299,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: "CORONA",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_INTOXICATE: {
         name: "Alistair's Intoxication",
@@ -963,6 +1309,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_LRD: {
         name: "Lee's Rapid Deconstruction",
@@ -972,6 +1319,7 @@
         flags: ["target", "destructive", "direct_damage_only"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SANDBLAST: {
         name: "Sandblast",
@@ -986,7 +1334,14 @@
           "direct_damage_only",
         ],
         flavour: "FRAG",
-        hex: [15, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "FRAG",
+          ac: "triple",
+          automatic: false,
+          accuracy: [15, 1, 10],
+          shield: true,
+        },
       },
       SPELL_SIMULACRUM: {
         name: "Sculpt Simulacrum",
@@ -996,6 +1351,7 @@
         flags: ["target", "not_self", "needs_tracer", "unholy"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CONJURE_BALL_LIGHTNING: {
         name: "Conjure Ball Lightning",
@@ -1003,8 +1359,15 @@
         level: 6,
         cap: 200,
         flags: ["none"],
-        flavour: null,
+        flavour: "ELECTRICITY",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_CHAIN_LIGHTNING: {
         name: "Chain Lightning",
@@ -1014,6 +1377,13 @@
         flags: ["direct_damage_only"],
         flavour: "THUNDER",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "THUNDER",
+          ac: "half",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_PORTAL_PROJECTILE: {
         name: "Portal Projectile",
@@ -1023,6 +1393,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MONSTROUS_MENAGERIE: {
         name: "Monstrous Menagerie",
@@ -1032,6 +1403,7 @@
         flags: ["mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GOLUBRIAS_PASSAGE: {
         name: "Passage of Golubria",
@@ -1041,6 +1413,7 @@
         flags: ["target", "aim_at_space", "escape", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FULMINANT_PRISM: {
         name: "Fulminant Prism",
@@ -1050,6 +1423,13 @@
         flags: ["target", "not_self", "no_ghost"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_PARALYSE: {
         name: "Paralyse",
@@ -1059,6 +1439,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MINOR_HEALING: {
         name: "Minor Healing",
@@ -1068,6 +1449,7 @@
         flags: ["recovery", "helpful", "monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MAJOR_HEALING: {
         name: "Major Healing",
@@ -1077,6 +1459,7 @@
         flags: ["recovery", "helpful", "monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_WOODWEAL: {
         name: "Woodweal",
@@ -1086,20 +1469,23 @@
         flags: ["recovery", "helpful", "monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HURL_DAMNATION: {
         name: "Hurl Damnation",
         tile: "HURL_DAMNATION",
         level: 9,
         cap: 200,
-        flags: [
-          "dir_or_target",
-          "unholy",
-          "needs_tracer",
-          "direct_damage_only",
-        ],
+        flags: ["dir_or_target", "unholy", "needs_tracer", "direct_damage_only"],
         flavour: "DAMNATION",
-        hex: [20, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "DAMNATION",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_BRAIN_BITE: {
         name: "Brain Bite",
@@ -1109,6 +1495,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_NOXIOUS_CLOUD: {
         name: "Noxious Cloud",
@@ -1118,6 +1505,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer", "cloud"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_STEAM_BALL: {
         name: "Steam Ball",
@@ -1126,7 +1514,14 @@
         cap: 0,
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "STEAM",
-        hex: [10, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "STEAM",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 10],
+          shield: false,
+        },
       },
       SPELL_UFETUBI_SWARM: {
         name: "Ufetubi Swarm",
@@ -1136,6 +1531,7 @@
         flags: ["unholy", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_SIN_BEAST: {
         name: "Summon Sin Beast",
@@ -1145,6 +1541,7 @@
         flags: ["unholy", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BOLT_OF_DEVASTATION: {
         name: "Bolt of Devastation",
@@ -1153,7 +1550,8 @@
         cap: 0,
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "DEVASTATION",
-        hex: [15, 1, 30],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPIT_POISON: {
         name: "Spit Poison",
@@ -1162,7 +1560,14 @@
         cap: 0,
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "POISON",
-        hex: [5, 1, 6],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "POISON",
+          ac: "normal",
+          automatic: false,
+          accuracy: [5, 1, 6],
+          shield: true,
+        },
       },
       SPELL_SUMMON_UNDEAD: {
         name: "Summon Undead",
@@ -1172,6 +1577,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CANTRIP: {
         name: "Cantrip",
@@ -1181,6 +1587,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_QUICKSILVER_BOLT: {
         name: "Quicksilver Bolt",
@@ -1189,7 +1596,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "not_self"],
         flavour: "MMISSILE",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_METAL_SPLINTERS: {
         name: "Metal Splinters",
@@ -1198,7 +1612,8 @@
         cap: 0,
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "FRAG",
-        hex: [19, 1, 30],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPLINTERSPRAY: {
         name: "Splinterspray",
@@ -1207,7 +1622,8 @@
         cap: 0,
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "FRAG",
-        hex: [17, 1, 30],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MIASMA_BREATH: {
         name: "Miasma Breath",
@@ -1216,7 +1632,8 @@
         cap: 0,
         flags: ["dir_or_target", "unclean", "monster", "needs_tracer", "cloud"],
         flavour: "MIASMA",
-        hex: [17, 1, 20],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_DRAKES: {
         name: "Summon Drakes",
@@ -1226,6 +1643,7 @@
         flags: ["unclean", "monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLINK_OTHER: {
         name: "Blink Other",
@@ -1235,6 +1653,7 @@
         flags: ["dir_or_target", "escape", "monster", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLINK_OTHER_CLOSE: {
         name: "Blink Other Close",
@@ -1244,6 +1663,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_MUSHROOMS: {
         name: "Summon Mushrooms",
@@ -1253,6 +1673,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPIT_ACID: {
         name: "Spit Acid",
@@ -1261,7 +1682,8 @@
         cap: 0,
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "ACID",
-        hex: [20, 1, 4],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CAUSTIC_BREATH: {
         name: "Caustic Breath",
@@ -1271,6 +1693,13 @@
         flags: ["dir_or_target", "noisy", "needs_tracer"],
         flavour: "ACID",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ACID",
+          ac: "normal",
+          automatic: false,
+          accuracy: [30, 0, 1],
+          shield: false,
+        },
       },
       SPELL_PYRE_ARROW: {
         name: "Pyre Arrow",
@@ -1279,7 +1708,8 @@
         cap: 100,
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "STICKY_FLAME",
-        hex: [18, 1, 12],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FIRE_BREATH: {
         name: "Fire Breath",
@@ -1289,6 +1719,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SEARING_BREATH: {
         name: "Searing Breath",
@@ -1298,6 +1729,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CHAOS_BREATH: {
         name: "Chaos Breath",
@@ -1307,6 +1739,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer", "cloud"],
         flavour: "MISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_COLD_BREATH: {
         name: "Cold Breath",
@@ -1316,6 +1749,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "COLD",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GLACIAL_BREATH: {
         name: "Glacial Breath",
@@ -1324,7 +1758,14 @@
         cap: 0,
         flags: ["dir_or_target", "noisy", "needs_tracer"],
         flavour: "COLD",
-        hex: [12, 1, 1],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "normal",
+          automatic: false,
+          accuracy: [12, 1, 1],
+          shield: false,
+        },
       },
       SPELL_WATER_ELEMENTALS: {
         name: "Summon Water Elementals",
@@ -1334,21 +1775,17 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PORKALATOR: {
         name: "Porkalator",
         tile: "PORKALATOR",
         level: 5,
         cap: 200,
-        flags: [
-          "dir_or_target",
-          "chaotic",
-          "needs_tracer",
-          "WL_check",
-          "monster",
-        ],
+        flags: ["dir_or_target", "chaotic", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CREATE_TENTACLES: {
         name: "Spawn Tentacles",
@@ -1358,6 +1795,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_EYEBALLS: {
         name: "Summon Eyeballs",
@@ -1367,6 +1805,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HASTE_OTHER: {
         name: "Haste Other",
@@ -1376,6 +1815,7 @@
         flags: ["dir_or_target", "helpful", "hasty", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_TOUCH_OF_PARADOX: {
         name: "Touch of Paradox",
@@ -1385,6 +1825,7 @@
         flags: ["helpful", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_EARTH_ELEMENTALS: {
         name: "Summon Earth Elementals",
@@ -1394,6 +1835,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_AIR_ELEMENTALS: {
         name: "Summon Air Elementals",
@@ -1403,6 +1845,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FIRE_ELEMENTALS: {
         name: "Summon Fire Elementals",
@@ -1412,6 +1855,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SLEEP: {
         name: "Sleep",
@@ -1421,6 +1865,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FAKE_MARA_SUMMON: {
         name: "Mara Summon",
@@ -1430,6 +1875,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_ILLUSION: {
         name: "Summon Illusion",
@@ -1439,6 +1885,7 @@
         flags: ["monster", "target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PRIMAL_WAVE: {
         name: "Primal Wave",
@@ -1447,7 +1894,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "WATER",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "WATER",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: true,
+        },
       },
       SPELL_CALL_TIDE: {
         name: "Call Tide",
@@ -1457,6 +1911,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_IOOD: {
         name: "Orb of Destruction",
@@ -1466,6 +1921,13 @@
         flags: ["dir_or_target", "not_self", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_INK_CLOUD: {
         name: "Ink Cloud",
@@ -1475,6 +1937,7 @@
         flags: ["monster", "escape"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MIGHT: {
         name: "Might",
@@ -1484,6 +1947,7 @@
         flags: ["helpful", "selfench", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MIGHT_OTHER: {
         name: "Might Other",
@@ -1493,6 +1957,7 @@
         flags: ["dir_or_target", "helpful", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_AWAKEN_FOREST: {
         name: "Awaken Forest",
@@ -1502,6 +1967,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DRUIDS_CALL: {
         name: "Druid's Call",
@@ -1511,6 +1977,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BROTHERS_IN_ARMS: {
         name: "Brothers in Arms",
@@ -1520,6 +1987,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_TROGS_HAND: {
         name: "Trog's Hand",
@@ -1529,6 +1997,7 @@
         flags: ["monster", "selfench", "recovery"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_MORTAL_CHAMPION: {
         name: "Summon Mortal Champion",
@@ -1538,6 +2007,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_VANQUISHED_VANGUARD: {
         name: "Vanquished Vanguard",
@@ -1547,6 +2017,7 @@
         flags: ["monster", "target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_HOLIES: {
         name: "Summon Holies",
@@ -1556,21 +2027,17 @@
         flags: ["monster", "mons_abjure", "holy"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HEAL_OTHER: {
         name: "Heal Other",
         tile: "HEAL_OTHER",
         level: 6,
         cap: 200,
-        flags: [
-          "dir_or_target",
-          "helpful",
-          "needs_tracer",
-          "monster",
-          "recovery",
-        ],
+        flags: ["dir_or_target", "helpful", "needs_tracer", "monster", "recovery"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HOLY_FLAMES: {
         name: "Holy Flames",
@@ -1580,6 +2047,7 @@
         flags: ["target", "not_self", "holy", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HOLY_BREATH: {
         name: "Holy Breath",
@@ -1588,7 +2056,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "cloud", "holy", "monster"],
         flavour: "HOLY",
-        hex: [18, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_INJURY_MIRROR: {
         name: "Injury Mirror",
@@ -1598,6 +2067,7 @@
         flags: ["selfench", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DRAIN_LIFE: {
         name: "Drain Life",
@@ -1607,6 +2077,7 @@
         flags: ["monster"],
         flavour: "NEG",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_LEDAS_LIQUEFACTION: {
         name: "Leda's Liquefaction",
@@ -1616,6 +2087,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_HYDRA: {
         name: "Summon Hydra",
@@ -1625,6 +2097,7 @@
         flags: ["mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MESMERISE: {
         name: "Mesmerise",
@@ -1634,6 +2107,7 @@
         flags: ["WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HELLFIRE_COURT: {
         name: "Hellfire Court",
@@ -1643,6 +2117,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PETRIFYING_CLOUD: {
         name: "Petrifying Cloud",
@@ -1652,6 +2127,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "PETRIFYING_CLOUD",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_INNER_FLAME: {
         name: "Inner Flame",
@@ -1661,6 +2137,7 @@
         flags: ["target", "not_self", "WL_check", "destructive"],
         flavour: "INNER_FLAME",
         hex: [0, 3, 1],
+        defence: null,
       },
       SPELL_ENSNARE: {
         name: "Ensnare",
@@ -1670,6 +2147,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GREATER_ENSNARE: {
         name: "Greater Ensnare",
@@ -1679,6 +2157,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THUNDERBOLT: {
         name: "Thunderbolt",
@@ -1686,8 +2165,15 @@
         level: 2,
         cap: 200,
         flags: ["dir_or_target", "not_self"],
-        flavour: null,
+        flavour: "ELECTRICITY",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_BATTLESPHERE: {
         name: "Iskenderun's Battlesphere",
@@ -1697,6 +2183,13 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SUMMON_MINOR_DEMON: {
         name: "Summon Minor Demon",
@@ -1706,6 +2199,7 @@
         flags: ["unholy", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_STICKS_TO_SNAKES: {
         name: "Sticks to Snakes",
@@ -1715,6 +2209,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MALMUTATE: {
         name: "Malmutate",
@@ -1724,6 +2219,7 @@
         flags: ["dir_or_target", "chaotic", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GLOOM: {
         name: "Gloom",
@@ -1733,6 +2229,7 @@
         flags: ["silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BECKONING_GALE: {
         name: "Beckoning Gale",
@@ -1742,6 +2239,13 @@
         flags: ["target", "not_self", "monster"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_FORCE_LANCE: {
         name: "Force Lance",
@@ -1750,7 +2254,14 @@
         cap: 100,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [20, 1, 7],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [20, 1, 7],
+          shield: true,
+        },
       },
       SPELL_SENTINEL_MARK: {
         name: "Sentinel's Mark",
@@ -1760,6 +2271,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_WORD_OF_RECALL: {
         name: "Word of Recall",
@@ -1769,6 +2281,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_INJURY_BOND: {
         name: "Injury Bond",
@@ -1778,6 +2291,7 @@
         flags: ["helpful", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPECTRAL_CLOUD: {
         name: "Spectral Cloud",
@@ -1787,6 +2301,7 @@
         flags: ["dir_or_target", "monster", "cloud"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GHOSTLY_FIREBALL: {
         name: "Ghostly Fireball",
@@ -1796,6 +2311,7 @@
         flags: ["dir_or_target", "monster", "unholy", "needs_tracer"],
         flavour: "NEG",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CALL_LOST_SOULS: {
         name: "Call Lost Souls",
@@ -1805,6 +2321,7 @@
         flags: ["unholy", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DIMENSION_ANCHOR: {
         name: "Dimension Anchor",
@@ -1814,6 +2331,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLINK_ALLIES_ENCIRCLE: {
         name: "Blink Allies Encircling",
@@ -1823,6 +2341,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_AWAKEN_VINES: {
         name: "Awaken Vines",
@@ -1832,6 +2351,7 @@
         flags: ["monster", "target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THORN_VOLLEY: {
         name: "Volley of Thorns",
@@ -1840,7 +2360,8 @@
         cap: 100,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [20, 1, 15],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CAGE_OF_BRAMBLES: {
         name: "Cage of Brambles",
@@ -1850,6 +2371,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_WATERSTRIKE: {
         name: "Waterstrike",
@@ -1857,8 +2379,15 @@
         level: 4,
         cap: 200,
         flags: ["target", "not_self", "monster"],
-        flavour: null,
+        flavour: "WATER",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "WATER",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_WIND_BLAST: {
         name: "Wind Blast",
@@ -1868,6 +2397,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_STRIP_WILLPOWER: {
         name: "Strip Willpower",
@@ -1877,6 +2407,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FUGUE_OF_THE_FALLEN: {
         name: "Fugue of the Fallen",
@@ -1886,6 +2417,7 @@
         flags: ["selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_VERMIN: {
         name: "Summon Vermin",
@@ -1895,6 +2427,7 @@
         flags: ["monster", "unholy", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MALIGN_OFFERING: {
         name: "Malign Offering",
@@ -1904,6 +2437,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MALIGN_OFFERING",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SEARING_RAY: {
         name: "Searing Ray",
@@ -1912,7 +2446,14 @@
         cap: 50,
         flags: ["dir_or_target", "needs_tracer", "direct_damage_only"],
         flavour: "MMISSILE",
-        hex: [11, 1, 8],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [11, 1, 8],
+          shield: false,
+        },
       },
       SPELL_DISCORD: {
         name: "Discord",
@@ -1922,6 +2463,7 @@
         flags: ["hasty", "WL_check"],
         flavour: null,
         hex: [0, 3, 2],
+        defence: null,
       },
       SPELL_INVISIBILITY_OTHER: {
         name: "Invisibility Other",
@@ -1931,6 +2473,7 @@
         flags: ["dir_or_target", "helpful", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_VIRULENCE: {
         name: "Virulence",
@@ -1940,6 +2483,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ORB_OF_ELECTRICITY: {
         name: "Orb of Electricity",
@@ -1949,6 +2493,13 @@
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "ELECTRICITY",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_FLASH_FREEZE: {
         name: "Flash Freeze",
@@ -1957,7 +2508,8 @@
         cap: 200,
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "ICE",
-        hex: [16, 1, 13],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CREEPING_FROST: {
         name: "Creeping Frost",
@@ -1966,7 +2518,8 @@
         cap: 200,
         flags: ["monster"],
         flavour: "COLD",
-        hex: [5, 1, 3],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_LEGENDARY_DESTRUCTION: {
         name: "Legendary Destruction",
@@ -1976,6 +2529,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FORCEFUL_INVITATION: {
         name: "Forceful Invitation",
@@ -1985,6 +2539,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PLANEREND: {
         name: "Plane Rend",
@@ -1994,6 +2549,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CHAIN_OF_CHAOS: {
         name: "Chain of Chaos",
@@ -2003,6 +2559,7 @@
         flags: ["monster", "chaotic"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CALL_OF_CHAOS: {
         name: "Call of Chaos",
@@ -2012,6 +2569,7 @@
         flags: ["chaotic", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SIGN_OF_RUIN: {
         name: "Sign of Ruin",
@@ -2021,6 +2579,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SAP_MAGIC: {
         name: "Sap Magic",
@@ -2030,6 +2589,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MAJOR_DESTRUCTION: {
         name: "Major Destruction",
@@ -2039,6 +2599,7 @@
         flags: ["dir_or_target", "chaotic", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BLINK_ALLIES_AWAY: {
         name: "Blink Allies Away",
@@ -2048,6 +2609,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_FOREST: {
         name: "Summon Forest",
@@ -2057,6 +2619,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FORGE_LIGHTNING_SPIRE: {
         name: "Forge Lightning Spire",
@@ -2066,6 +2629,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FORGE_BLAZEHEART_GOLEM: {
         name: "Forge Blazeheart Golem",
@@ -2075,6 +2639,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_REBOUNDING_BLAZE: {
         name: "Rebounding Blaze",
@@ -2083,7 +2648,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "FIRE",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_REBOUNDING_CHILL: {
         name: "Rebounding Chill",
@@ -2092,7 +2664,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "COLD",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_GLACIATE: {
         name: "Glaciate",
@@ -2100,8 +2679,15 @@
         level: 9,
         cap: 200,
         flags: ["dir_or_target"],
-        flavour: null,
+        flavour: "ICE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DRAGON_CALL: {
         name: "Dragon's Call",
@@ -2111,6 +2697,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPELLSPARK_SERVITOR: {
         name: "Spellspark Servitor",
@@ -2120,6 +2707,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_MANA_VIPER: {
         name: "Summon Mana Viper",
@@ -2129,6 +2717,7 @@
         flags: ["mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PHANTOM_MIRROR: {
         name: "Phantom Mirror",
@@ -2138,6 +2727,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DIMINISH_SPELLS: {
         name: "Diminish Spells",
@@ -2147,6 +2737,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CORROSIVE_BOLT: {
         name: "Corrosive Bolt",
@@ -2155,7 +2746,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "ACID",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ACID",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_BOLT_OF_LIGHT: {
         name: "Bolt of Light",
@@ -2164,7 +2762,14 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "LIGHT",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "LIGHT",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_BOLT_OF_ANTIMAGIC: {
         name: "Bolt of Antimagic",
@@ -2173,7 +2778,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "ANTIMAGIC",
-        hex: [17, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BOLT_OF_FLESH: {
         name: "Bolt of Flesh",
@@ -2182,7 +2788,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster", "chaotic"],
         flavour: "MMISSILE",
-        hex: [17, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_AWAKEN_FLESH: {
         name: "Awaken Flesh",
@@ -2192,6 +2799,7 @@
         flags: ["chaotic", "monster"],
         flavour: "CHAOS",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SERPENT_OF_HELL_GEH_BREATH: {
         name: "gehenna serpent of hell breath",
@@ -2201,6 +2809,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SERPENT_OF_HELL_COC_BREATH: {
         name: "cocytus serpent of hell breath",
@@ -2210,6 +2819,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SERPENT_OF_HELL_DIS_BREATH: {
         name: "dis serpent of hell breath",
@@ -2219,6 +2829,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SERPENT_OF_HELL_TAR_BREATH: {
         name: "tartarus serpent of hell breath",
@@ -2228,6 +2839,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_EMPEROR_SCORPIONS: {
         name: "Summon Emperor Scorpions",
@@ -2237,6 +2849,7 @@
         flags: ["mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_IRRADIATE: {
         name: "Irradiate",
@@ -2246,6 +2859,13 @@
         flags: ["chaotic"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SPIT_LAVA: {
         name: "Spit Lava",
@@ -2255,6 +2875,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "LAVA",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ELECTRICAL_BOLT: {
         name: "Electrical Bolt",
@@ -2264,6 +2885,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "ELECTRICITY",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FLAMING_CLOUD: {
         name: "Flaming Cloud",
@@ -2273,6 +2895,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer", "cloud"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THROW_BARBS: {
         name: "Throw Barbs",
@@ -2282,6 +2905,7 @@
         flags: ["dir_or_target", "monster", "noisy", "needs_tracer"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BATTLECRY: {
         name: "Battlecry",
@@ -2291,6 +2915,7 @@
         flags: ["monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_WARNING_CRY: {
         name: "Warning Cry",
@@ -2300,6 +2925,7 @@
         flags: ["monster", "selfench", "noisy"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HUNTING_CALL: {
         name: "Hunting Call",
@@ -2309,6 +2935,7 @@
         flags: ["monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FUNERAL_DIRGE: {
         name: "Funeral Dirge",
@@ -2318,6 +2945,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SEAL_DOORS: {
         name: "Seal Doors",
@@ -2327,6 +2955,7 @@
         flags: ["monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FLAY: {
         name: "Flay",
@@ -2336,6 +2965,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BERSERK_OTHER: {
         name: "Berserk Other",
@@ -2345,6 +2975,7 @@
         flags: ["hasty", "monster", "helpful"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CORRUPTING_PULSE: {
         name: "Corrupting Pulse",
@@ -2354,6 +2985,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SIREN_SONG: {
         name: "Siren Song",
@@ -2363,6 +2995,7 @@
         flags: ["WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_AVATAR_SONG: {
         name: "Avatar Song",
@@ -2372,6 +3005,7 @@
         flags: ["WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MURKY_LEGION: {
         name: "Murky Legion",
@@ -2381,6 +3015,7 @@
         flags: ["unholy", "chaotic", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PARALYSIS_GAZE: {
         name: "Paralysis Gaze",
@@ -2390,6 +3025,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CONFUSION_GAZE: {
         name: "Confusion Gaze",
@@ -2399,6 +3035,7 @@
         flags: ["target", "monster", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ANTIMAGIC_GAZE: {
         name: "Antimagic Gaze",
@@ -2408,6 +3045,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DRAINING_GAZE: {
         name: "Draining Gaze",
@@ -2417,6 +3055,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_WEAKENING_GAZE: {
         name: "Weakening Gaze",
@@ -2426,6 +3065,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MOURNING_WAIL: {
         name: "Mourning Wail",
@@ -2435,6 +3075,7 @@
         flags: ["dir_or_target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DEATH_RATTLE: {
         name: "Death Rattle",
@@ -2444,6 +3085,7 @@
         flags: ["dir_or_target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MARCH_OF_SORROWS: {
         name: "March of Sorrows",
@@ -2453,6 +3095,7 @@
         flags: ["dir_or_target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_SCARABS: {
         name: "Summon Scarabs",
@@ -2462,6 +3105,7 @@
         flags: ["mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THROW_ALLY: {
         name: "Throw Ally",
@@ -2471,6 +3115,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CLEANSING_FLAME: {
         name: "Cleansing Flame",
@@ -2480,6 +3125,7 @@
         flags: ["monster", "holy"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GRAVITAS: {
         name: "Gell's Gravitas",
@@ -2489,6 +3135,13 @@
         flags: ["target", "needs_tracer", "no_ghost"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_VIOLENT_UNRAVELLING: {
         name: "Yara's Violent Unravelling",
@@ -2498,6 +3151,13 @@
         flags: ["target", "no_ghost", "chaotic", "destructive"],
         flavour: "UNRAVELLING",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "UNRAVELLING",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_ENTROPIC_WEAVE: {
         name: "Entropic Weave",
@@ -2507,6 +3167,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_EXECUTIONERS: {
         name: "Summon Executioners",
@@ -2516,6 +3177,7 @@
         flags: ["unholy", "mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_OBLIVION_HOWL: {
         name: "Oblivion Howl",
@@ -2525,6 +3187,7 @@
         flags: ["target", "monster", "WL_check"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PRAYER_OF_BRILLIANCE: {
         name: "Prayer of Brilliance",
@@ -2534,6 +3197,7 @@
         flags: ["helpful", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ICEBLAST: {
         name: "Iceblast",
@@ -2543,6 +3207,13 @@
         flags: ["dir_or_target", "needs_tracer", "direct_damage_only"],
         flavour: "ICE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SLUG_DART: {
         name: "Slug Dart",
@@ -2551,7 +3222,8 @@
         cap: 25,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [14, 1, 35],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FLEETFOOT: {
         name: "Fleetfoot",
@@ -2561,6 +3233,7 @@
         flags: ["hasty", "selfench", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GREATER_SERVANT_MAKHLEB: {
         name: "Infernal Servant",
@@ -2570,6 +3243,7 @@
         flags: ["unholy", "mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BIND_SOULS: {
         name: "Bind Souls",
@@ -2579,6 +3253,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_INFESTATION: {
         name: "Infestation",
@@ -2588,6 +3263,7 @@
         flags: ["target", "unclean"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_STILL_WINDS: {
         name: "Still Winds",
@@ -2597,6 +3273,7 @@
         flags: ["monster", "selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_RESONANCE_STRIKE: {
         name: "Resonance Strike",
@@ -2606,6 +3283,13 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_GHOSTLY_SACRIFICE: {
         name: "Ghostly Sacrifice",
@@ -2615,6 +3299,7 @@
         flags: ["target", "monster"],
         flavour: "NEG",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DREAM_DUST: {
         name: "Dream Dust",
@@ -2624,6 +3309,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BECKONING: {
         name: "Lesser Beckoning",
@@ -2633,6 +3319,7 @@
         flags: ["dir_or_target", "not_self", "needs_tracer"],
         flavour: "BECKONING",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_UPHEAVAL: {
         name: "Upheaval",
@@ -2642,6 +3329,7 @@
         flags: ["target", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MERCURY_ARROW: {
         name: "Mercury Arrow",
@@ -2650,7 +3338,14 @@
         cap: 50,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "MERCURY",
-        hex: [12, 1, 5],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MERCURY",
+          ac: "normal",
+          automatic: false,
+          accuracy: [12, 1, 5],
+          shield: true,
+        },
       },
       SPELL_POISONOUS_VAPOURS: {
         name: "Poisonous Vapours",
@@ -2658,8 +3353,15 @@
         level: 1,
         cap: 25,
         flags: ["target", "destructive", "not_self"],
-        flavour: null,
+        flavour: "POISON",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "POISON",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_IGNITION: {
         name: "Ignition",
@@ -2669,6 +3371,13 @@
         flags: ["destructive", "direct_damage_only"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_BORGNJORS_VILE_CLUTCH: {
         name: "Borgnjor's Vile Clutch",
@@ -2678,6 +3387,7 @@
         flags: ["dir_or_target", "not_self", "needs_tracer"],
         flavour: "VILE_CLUTCH",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FASTROOT: {
         name: "Fastroot",
@@ -2687,6 +3397,7 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "ROOTS",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_WARP_SPACE: {
         name: "Warp Space",
@@ -2696,6 +3407,13 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "WARPING",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "WARPING",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SOJOURNING_BOLT: {
         name: "Sojourning Bolt",
@@ -2705,6 +3423,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HARPOON_SHOT: {
         name: "Harpoon Shot",
@@ -2713,7 +3432,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [17, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GRASPING_ROOTS: {
         name: "Grasping Roots",
@@ -2723,6 +3443,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THROW_BOLAS: {
         name: "Throw Bolas",
@@ -2731,7 +3452,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "BOLAS",
-        hex: [20, 1, 20],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_THROW_PIE: {
         name: "Throw Klown Pie",
@@ -2740,7 +3462,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [16, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPORULATE: {
         name: "Sporulate",
@@ -2750,6 +3473,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_LAUNCH_SPORANGIUM: {
         name: "Launch Sporangium",
@@ -2757,8 +3481,15 @@
         level: 5,
         cap: 200,
         flags: ["monster"],
-        flavour: null,
+        flavour: "ACID",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ACID",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_STARBURST: {
         name: "Starburst",
@@ -2767,7 +3498,14 @@
         cap: 200,
         flags: ["direct_damage_only"],
         flavour: "FIRE",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_FOXFIRE: {
         name: "Foxfire",
@@ -2777,6 +3515,13 @@
         flags: ["none"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_MARSHLIGHT: {
         name: "Marshlight",
@@ -2786,6 +3531,13 @@
         flags: ["monster"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_HAILSTORM: {
         name: "Hailstorm",
@@ -2794,7 +3546,14 @@
         cap: 100,
         flags: ["direct_damage_only"],
         flavour: "ICE",
-        hex: [9, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [9, 1, 10],
+          shield: true,
+        },
       },
       SPELL_NOXIOUS_BOG: {
         name: "Eringya's Noxious Bog",
@@ -2802,8 +3561,15 @@
         level: 6,
         cap: 200,
         flags: ["no_ghost", "destructive"],
-        flavour: null,
+        flavour: "POISON_ARROW",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "POISON_ARROW",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_AGONY: {
         name: "Agony",
@@ -2813,6 +3579,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster", "WL_check"],
         flavour: "AGONY",
         hex: [0, 5, 1],
+        defence: null,
       },
       SPELL_DISPEL_UNDEAD_RANGE: {
         name: "Dispel Undead Range",
@@ -2821,7 +3588,14 @@
         cap: 100,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "DISPEL_UNDEAD",
-        hex: [0, 3, 2],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "DISPEL_UNDEAD",
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_FROZEN_RAMPARTS: {
         name: "Frozen Ramparts",
@@ -2829,8 +3603,15 @@
         level: 3,
         cap: 50,
         flags: ["no_ghost", "destructive"],
-        flavour: null,
+        flavour: "COLD",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_MAXWELLS_COUPLING: {
         name: "Maxwell's Capacitive Coupling",
@@ -2840,6 +3621,13 @@
         flags: ["no_ghost", "destructive", "needs_target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SONIC_WAVE: {
         name: "Sonic wave",
@@ -2849,6 +3637,13 @@
         flags: ["noisy"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [40, 0, 1],
+          shield: true,
+        },
       },
       SPELL_ROLL: {
         name: "Roll",
@@ -2858,6 +3653,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HURL_SLUDGE: {
         name: "Hurl Sludge",
@@ -2866,7 +3662,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "POISON_ARROW",
-        hex: [20, 1, 15],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_TZITZIMITL: {
         name: "Summon Tzitzimitl",
@@ -2876,6 +3673,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_HELL_SENTINEL: {
         name: "Summon Hell Sentinel",
@@ -2885,6 +3683,7 @@
         flags: ["monster", "mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_AWAKEN_ARMOUR: {
         name: "Awaken Armour",
@@ -2894,6 +3693,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MANIFOLD_ASSAULT: {
         name: "Manifold Assault",
@@ -2903,6 +3703,7 @@
         flags: ["needs_target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CONCENTRATE_VENOM: {
         name: "Concentrate Venom",
@@ -2912,6 +3713,7 @@
         flags: ["dir_or_target", "helpful", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ERUPTION: {
         name: "Eruption",
@@ -2919,8 +3721,15 @@
         level: 5,
         cap: 200,
         flags: ["target", "needs_tracer", "monster"],
-        flavour: null,
+        flavour: "LAVA",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "LAVA",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_PYROCLASTIC_SURGE: {
         name: "Pyroclastic Surge",
@@ -2929,7 +3738,14 @@
         cap: 200,
         flags: ["monster"],
         flavour: "FIRE",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_STUNNING_BURST: {
         name: "Stunning Burst",
@@ -2938,7 +3754,8 @@
         cap: 200,
         flags: ["target", "needs_tracer", "monster"],
         flavour: "STUN_BOLT",
-        hex: [15, 1, 10],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CORRUPT_LOCALE: {
         name: "Corrupt",
@@ -2948,6 +3765,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CONJURE_LIVING_SPELLS: {
         name: "Conjure Living Spells",
@@ -2957,6 +3775,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_CACTUS: {
         name: "Summon Cactus Giant",
@@ -2966,6 +3785,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_STOKE_FLAMES: {
         name: "Stoke Flames",
@@ -2975,6 +3795,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SERACFALL: {
         name: "Seracfall",
@@ -2984,6 +3805,13 @@
         flags: ["monster"],
         flavour: "ICE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SCORCH: {
         name: "Scorch",
@@ -2991,8 +3819,15 @@
         level: 2,
         cap: 50,
         flags: ["destructive", "needs_target"],
-        flavour: null,
+        flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_FLAME_WAVE: {
         name: "Flame Wave",
@@ -3002,6 +3837,13 @@
         flags: ["none"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_ENFEEBLE: {
         name: "Enfeeble",
@@ -3011,6 +3853,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check"],
         flavour: "ENFEEBLE",
         hex: [0, 4, 1],
+        defence: null,
       },
       SPELL_SUMMON_SPIDERS: {
         name: "Summon Spiders",
@@ -3020,6 +3863,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ANGUISH: {
         name: "Anguish",
@@ -3029,6 +3873,7 @@
         flags: ["WL_check"],
         flavour: null,
         hex: [0, 3, 2],
+        defence: null,
       },
       SPELL_SUMMON_SCORPIONS: {
         name: "Summon Scorpions",
@@ -3038,6 +3883,7 @@
         flags: ["mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHEZAS_DANCE: {
         name: "Sheza's Dance",
@@ -3047,6 +3893,7 @@
         flags: ["mons_abjure", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DIVINE_ARMAMENT: {
         name: "Divine Armament",
@@ -3056,6 +3903,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_KISS_OF_DEATH: {
         name: "Kiss of Death",
@@ -3065,6 +3913,13 @@
         flags: ["dir_or_target", "needs_tracer", "not_self"],
         flavour: "NEG",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "NEG",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_JINXBITE: {
         name: "Jinxbite",
@@ -3074,6 +3929,13 @@
         flags: ["selfench"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "none",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SIGIL_OF_BINDING: {
         name: "Sigil of Binding",
@@ -3083,6 +3945,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DIMENSIONAL_BULLSEYE: {
         name: "Dimensional Bullseye",
@@ -3092,6 +3955,7 @@
         flags: ["target", "not_self", "prefer_farthest"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BOULDER: {
         name: "Brom's Barrelling Boulder",
@@ -3101,6 +3965,13 @@
         flags: ["target", "not_self"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_VITRIFY: {
         name: "Vitrify",
@@ -3110,6 +3981,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_VITRIFYING_GAZE: {
         name: "Vitrifying Gaze",
@@ -3119,6 +3991,7 @@
         flags: ["target", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CRYSTALLISING_SHOT: {
         name: "Crystallising Shot",
@@ -3127,7 +4000,8 @@
         cap: 50,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "CRYSTALLISING",
-        hex: [18, 1, 30],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_TREMORSTONE: {
         name: "Tremorstone",
@@ -3137,6 +4011,13 @@
         flags: ["none"],
         flavour: "FRAG",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FRAG",
+          ac: "triple",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_REGENERATE_OTHER: {
         name: "Regenerate Other",
@@ -3146,6 +4027,7 @@
         flags: ["monster", "helpful", "recovery"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MASS_REGENERATION: {
         name: "Mass Regeneration",
@@ -3155,6 +4037,7 @@
         flags: ["monster", "helpful", "recovery"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_NOXIOUS_BREATH: {
         name: "Noxious Breath",
@@ -3164,6 +4047,13 @@
         flags: ["dir_or_target", "noisy", "needs_tracer"],
         flavour: "MEPHITIC",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MEPHITIC",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_UNLEASH_DESTRUCTION: {
         name: "Unleash Destruction",
@@ -3172,7 +4062,14 @@
         cap: 0,
         flags: ["dir_or_target", "chaotic", "needs_tracer"],
         flavour: "MMISSILE",
-        hex: [10, 1, 7],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 7],
+          shield: false,
+        },
       },
       SPELL_HURL_TORCHLIGHT: {
         name: "Hurl Torchlight",
@@ -3182,6 +4079,13 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "UMBRAL_TORCHLIGHT",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "UMBRAL_TORCHLIGHT",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_COMBUSTION_BREATH: {
         name: "Combustion Breath",
@@ -3191,6 +4095,13 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "MISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_NULLIFYING_BREATH: {
         name: "Nullifying Breath",
@@ -3200,6 +4111,13 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_STEAM_BREATH: {
         name: "Steam Breath",
@@ -3208,7 +4126,14 @@
         cap: 0,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "STEAM",
-        hex: [10, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "STEAM",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 10],
+          shield: false,
+        },
       },
       SPELL_MUD_BREATH: {
         name: "Mud Breath",
@@ -3218,6 +4143,13 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "MISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [30, 0, 1],
+          shield: true,
+        },
       },
       SPELL_GALVANIC_BREATH: {
         name: "Galvanic Breath",
@@ -3227,6 +4159,13 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "ELECTRICITY",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_PILEDRIVER: {
         name: "Maxwell's Portable Piledriver",
@@ -3236,6 +4175,13 @@
         flags: ["target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_GELLS_GAVOTTE: {
         name: "Gell's Gavotte",
@@ -3245,6 +4191,13 @@
         flags: ["target", "aim_at_space"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: {
+          flavour: null,
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_MAGNAVOLT: {
         name: "Magnavolt",
@@ -3253,7 +4206,14 @@
         cap: 200,
         flags: ["target", "needs_tracer", "destructive", "prefer_farthest"],
         flavour: "ELECTRICITY",
-        hex: [11, 1, 20],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ELECTRICITY",
+          ac: "half",
+          automatic: false,
+          accuracy: [11, 1, 20],
+          shield: false,
+        },
       },
       SPELL_FULSOME_FUSILLADE: {
         name: "Fulsome Fusillade",
@@ -3263,6 +4223,7 @@
         flags: ["destructive", "chaotic"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_RIMEBLIGHT: {
         name: "Rimeblight",
@@ -3271,7 +4232,8 @@
         cap: 200,
         flags: ["dir_or_target", "unclean", "destructive", "not_self"],
         flavour: "RIMEBLIGHT",
-        hex: [0, 1, 3],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HOARFROST_CANNONADE: {
         name: "Hoarfrost Cannonade",
@@ -3281,6 +4243,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SEISMIC_STOMP: {
         name: "Seismic Stomp",
@@ -3290,6 +4253,7 @@
         flags: ["monster"],
         flavour: "SEISMIC",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HOARFROST_BULLET: {
         name: "Hoarfrost Bullet",
@@ -3298,7 +4262,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "ICE",
-        hex: [13, 1, 35],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_FLASHING_BALESTRA: {
         name: "Flashing Balestra",
@@ -3307,7 +4272,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [20, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PHANTOM_BLITZ: {
         name: "Phantom Blitz",
@@ -3316,7 +4282,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "MMISSILE",
-        hex: [20, 1, 30],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BESTOW_ARMS: {
         name: "Bestow Arms",
@@ -3326,6 +4293,7 @@
         flags: ["helpful", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_HELLFIRE_MORTAR: {
         name: "Hellfire Mortar",
@@ -3335,6 +4303,7 @@
         flags: ["dir_or_target", "aim_at_space", "destructive"],
         flavour: "DIGGING",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_SHARD: {
         name: "Shadow Shard",
@@ -3343,7 +4312,8 @@
         cap: 200,
         flags: ["dir_or_target", "monster", "needs_tracer", "silent"],
         flavour: "MMISSILE",
-        hex: [20, 1, 10],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_BEAM: {
         name: "Shadow Beam",
@@ -3352,7 +4322,8 @@
         cap: 200,
         flags: ["dir_or_target", "monster", "needs_tracer", "silent"],
         flavour: "MMISSILE",
-        hex: [20, 1, 15],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_BALL: {
         name: "Shadowball",
@@ -3362,6 +4333,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer", "silent"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_CREEPING_SHADOW: {
         name: "Creeping Shadow",
@@ -3371,6 +4343,7 @@
         flags: ["monster", "needs_tracer", "silent"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_TEMPEST: {
         name: "Shadow Tempest",
@@ -3379,7 +4352,8 @@
         cap: 200,
         flags: ["monster", "needs_tracer", "silent"],
         flavour: "MMISSILE",
-        hex: [15, 1, 20],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_PRISM: {
         name: "Shadow Prism",
@@ -3389,6 +4363,7 @@
         flags: ["target", "monster", "needs_tracer", "silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_PUPPET: {
         name: "Shadow Puppet",
@@ -3398,6 +4373,7 @@
         flags: ["monster", "silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_TURRET: {
         name: "Shadow Turret",
@@ -3407,6 +4383,7 @@
         flags: ["monster", "silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_SHOT: {
         name: "Shadow Shot",
@@ -3415,7 +4392,8 @@
         cap: 200,
         flags: ["dir_or_target", "monster", "needs_tracer", "silent"],
         flavour: "MMISSILE",
-        hex: [15, 1, 15],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_BIND: {
         name: "Shadow Bind",
@@ -3425,6 +4403,7 @@
         flags: ["target", "monster", "silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_TORPOR: {
         name: "Shadow Torpor",
@@ -3433,7 +4412,8 @@
         cap: 200,
         flags: ["dir_or_target", "monster", "needs_tracer", "silent"],
         flavour: "SHADOW_TORPOR",
-        hex: [0, 1, 3],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHADOW_DRAINING: {
         name: "Shadow Draining",
@@ -3443,6 +4423,7 @@
         flags: ["monster", "needs_tracer", "silent"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GRAVE_CLAW: {
         name: "Grave Claw",
@@ -3452,6 +4433,13 @@
         flags: ["target", "not_self"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_CLOCKWORK_BEE: {
         name: "Launch Clockwork Bee",
@@ -3461,6 +4449,7 @@
         flags: ["target", "not_self"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPIKE_LAUNCHER: {
         name: "Construct Spike Launcher",
@@ -3469,7 +4458,14 @@
         cap: 50,
         flags: ["none"],
         flavour: "MMISSILE",
-        hex: [12, 1, 10],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [12, 1, 10],
+          shield: true,
+        },
       },
       SPELL_KINETIC_GRAPNEL: {
         name: "Kinetic Grapnel",
@@ -3478,7 +4474,14 @@
         cap: 25,
         flags: ["dir_or_target", "needs_tracer", "destructive"],
         flavour: "MMISSILE",
-        hex: [8, 1, 5],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [8, 1, 5],
+          shield: true,
+        },
       },
       SPELL_DIAMOND_SAWBLADES: {
         name: "Diamond Sawblades",
@@ -3488,6 +4491,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SHRED: {
         name: "Shred",
@@ -3497,6 +4501,7 @@
         flags: ["monster"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SURPRISING_CROCODILE: {
         name: "Eringya's Surprising Crocodile",
@@ -3506,6 +4511,7 @@
         flags: ["target", "not_self"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PLATINUM_PARAGON: {
         name: "Platinum Paragon",
@@ -3515,6 +4521,13 @@
         flags: ["target", "not_self"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_WALKING_ALEMBIC: {
         name: "Alistair's Walking Alembic",
@@ -3524,6 +4537,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MONARCH_BOMB: {
         name: "Forge Monarch Bomb",
@@ -3533,6 +4547,13 @@
         flags: ["none"],
         flavour: "LAVA",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "LAVA",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DEPLOY_BOMBLET: {
         name: "Launch Bomblet",
@@ -3541,7 +4562,8 @@
         cap: 200,
         flags: ["target", "monster"],
         flavour: "MMISSILE",
-        hex: [14, 1, 35],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SPLINTERFROST_SHELL: {
         name: "Splinterfrost Shell",
@@ -3550,7 +4572,14 @@
         cap: 200,
         flags: ["target", "not_self"],
         flavour: "ICE",
-        hex: [10, 1, 25],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [10, 1, 25],
+          shield: false,
+        },
       },
       SPELL_PERCUSSIVE_TEMPERING: {
         name: "Nazja's Percussive Tempering",
@@ -3560,6 +4589,13 @@
         flags: ["target", "helpful", "not_self", "destructive"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_ALL_PURPOSE_TEMPERING: {
         name: "Nazja's All-Purpose Tempering",
@@ -3569,6 +4605,13 @@
         flags: ["target", "helpful", "destructive", "monster"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_FORTRESS_BLAST: {
         name: "Fortress Blast",
@@ -3578,6 +4621,7 @@
         flags: ["destructive", "direct_damage_only"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SUMMON_SEISMOSAURUS_EGG: {
         name: "Summon Seismosaurus Egg",
@@ -3587,6 +4631,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PHALANX_BEETLE: {
         name: "Forge Phalanx Beetle",
@@ -3596,6 +4641,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_RENDING_BLADE: {
         name: "Rending Blade",
@@ -3605,6 +4651,7 @@
         flags: ["none"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MAGMA_BARRAGE: {
         name: "Magma Barrage",
@@ -3613,7 +4660,8 @@
         cap: 200,
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "LAVA",
-        hex: [17, 1, 25],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_VEX: {
         name: "Vex",
@@ -3623,6 +4671,7 @@
         flags: ["dir_or_target", "needs_tracer", "WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_RAVENOUS_SWARM: {
         name: "Ravenous Swarm",
@@ -3632,6 +4681,7 @@
         flags: ["dir_or_target", "monster", "needs_tracer", "cloud"],
         flavour: "BAT_CLOUD",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DOMINATE_UNDEAD: {
         name: "Dominate Undead",
@@ -3641,6 +4691,7 @@
         flags: ["WL_check", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DETONATION_CATALYST: {
         name: "Detonation Catalyst",
@@ -3648,8 +4699,15 @@
         level: 5,
         cap: 100,
         flags: ["selfench"],
-        flavour: null,
+        flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_RUST_BREATH: {
         name: "Rust Breath",
@@ -3659,6 +4717,7 @@
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_GOLDEN_BREATH: {
         name: "Golden Breath",
@@ -3667,7 +4726,14 @@
         cap: 0,
         flags: ["dir_or_target", "needs_tracer"],
         flavour: "MMISSILE",
-        hex: [20, 1, 5],
+        hex: [0, 1, 1],
+        defence: {
+          flavour: "MMISSILE",
+          ac: "normal",
+          automatic: false,
+          accuracy: [20, 1, 5],
+          shield: false,
+        },
       },
       SPELL_SPHINX_SISTERS: {
         name: "Sphinx Sisters",
@@ -3677,6 +4743,7 @@
         flags: ["mons_abjure"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ILL_OMEN: {
         name: "Ill Omen",
@@ -3686,6 +4753,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DOOM_BOLT: {
         name: "Doom Bolt",
@@ -3694,7 +4762,8 @@
         cap: 0,
         flags: ["dir_or_target", "monster", "needs_tracer"],
         flavour: "MMISSILE",
-        hex: [15, 1, 30],
+        hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_WARP_BODY: {
         name: "Warp Body",
@@ -3704,6 +4773,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster", "chaotic"],
         flavour: "WARP_BODY",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_OSTRACISE: {
         name: "Ostracise",
@@ -3713,6 +4783,7 @@
         flags: ["monster", "target"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_MUTAGENIC_GAZE: {
         name: "Mutagenic Gaze",
@@ -3722,6 +4793,7 @@
         flags: ["target", "monster", "chaotic"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_ACID_BALL: {
         name: "Acid Ball",
@@ -3731,6 +4803,7 @@
         flags: ["dir_or_target", "needs_tracer", "monster"],
         flavour: "ACID",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_NO_SPELL: {
         name: "nonexistent spell",
@@ -3740,6 +4813,7 @@
         flags: ["testing"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PYRRHIC_RECOLLECTION: {
         name: "Pyrrhic Recollection",
@@ -3749,6 +4823,7 @@
         flags: ["monster", "dummy"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PLANAR_OVERLAY: {
         name: "Planar Overlay",
@@ -3758,6 +4833,7 @@
         flags: ["monster", "dummy"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DOOMSAYING: {
         name: "Doomsaying",
@@ -3767,6 +4843,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_SLEETSTRIKE: {
         name: "Sleetstrike",
@@ -3774,8 +4851,15 @@
         level: 5,
         cap: 200,
         flags: ["target", "destructive", "monster"],
-        flavour: null,
+        flavour: "ICE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_LANDBREAKER: {
         name: "Landbreaker",
@@ -3785,6 +4869,7 @@
         flags: ["monster"],
         flavour: "MMISSILE",
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_STAMPEDE: {
         name: "Stampede",
@@ -3794,6 +4879,7 @@
         flags: ["monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_BOLSTER: {
         name: "Bolster",
@@ -3803,6 +4889,7 @@
         flags: ["helpful", "selfench", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_PHASE_SHIFT: {
         name: "Phase Shift",
@@ -3812,6 +4899,7 @@
         flags: ["helpful", "selfench", "monster"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
       SPELL_DRAGON_VEINS: {
         name: "Dragon Veins",
@@ -3821,6 +4909,13 @@
         flags: ["destructive"],
         flavour: "AIR",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "AIR",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DRAGON_VEIN_FIRE: {
         name: "Dragon Vein (Fire)",
@@ -3830,6 +4925,13 @@
         flags: ["destructive"],
         flavour: "FIRE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "FIRE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DRAGON_VEIN_ICE: {
         name: "Dragon Vein (Ice)",
@@ -3839,6 +4941,13 @@
         flags: ["destructive"],
         flavour: "COLD",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "COLD",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DRAGON_VEIN_AIR: {
         name: "Dragon Vein (Air)",
@@ -3848,6 +4957,13 @@
         flags: ["destructive"],
         flavour: "AIR",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "AIR",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_DRAGON_VEIN_EARTH: {
         name: "Dragon Vein (Earth)",
@@ -3857,6 +4973,13 @@
         flags: ["destructive"],
         flavour: "SEISMIC",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "SEISMIC",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_ICE_THORNS: {
         name: "Ice Thorns",
@@ -3866,6 +4989,13 @@
         flags: ["destructive", "target", "needs_target"],
         flavour: "ICE",
         hex: [0, 1, 1],
+        defence: {
+          flavour: "ICE",
+          ac: "normal",
+          automatic: true,
+          accuracy: null,
+          shield: false,
+        },
       },
       SPELL_SIROCCO: {
         name: "Sirocco",
@@ -3875,6 +5005,7 @@
         flags: ["dir_or_target", "needs_tracer", "destructive"],
         flavour: null,
         hex: [0, 1, 1],
+        defence: null,
       },
     },
   };
