@@ -5,6 +5,8 @@ const fs = require("node:fs");
 const Core = require("../extension/core.js");
 const Advisor = require("../extension/advisor.js");
 const Combat = require("../extension/combat.js");
+const KNOWN_SPELL_FLAGS = 0x40a52;
+const LIBRARY_FLAGS = 0xc0342;
 const bridge = fs.readFileSync(
   require.resolve("../extension/bridge.js"),
   "utf8",
@@ -70,7 +72,7 @@ function harness() {
                   {
                     monsters: [
                       {
-                        mon: { id: 1, name: "Adder", typedata: { avghp: 11 } },
+                        mon: { id: 1, name: "Adder", att: 0, threat: 1, typedata: { avghp: 11 } },
                         loc: { x: 1, y: 1 },
                       },
                     ],
@@ -196,9 +198,53 @@ test("monster descriptions feed bounded AC and EV into state without sending gam
   assert.equal(h.lastState().monsters[0].ac, null);
   assert.equal(h.lastState().monsters[0].ev, null);
 });
+test("observed poison resistance removes Korean darts while escape scrolls never become target candidates", () => {
+  const h = harness();
+  h.player.inv = {
+    0: { name: "자벨린", quantity: 3, base_type: 1, action_verb: "Fire" },
+    1: { name: "독다트", quantity: 3, base_type: 1, action_verb: "Fire" },
+    2: { name: "쿠라레다트", quantity: 3, base_type: 1, action_verb: "Fire" },
+    3: { name: "점멸의 두루마리", quantity: 3, base_type: 5, action_verb: "Read" },
+  };
+  h.receive({ msg: "player" });
+  const candidates = () => Advisor.advise(h.lastState(), h.lastState().monsters[0]).candidates.map((entry) => entry.slot);
+  assert.deepEqual(candidates(), [0]);
+  h.receive({ msg: "ui-push", type: "describe-monster", title: "Adder", body: "rF: ...  rPois: +  rElec: ." });
+  assert.equal(h.lastState().monsters[0].resists.poison, 1);
+  assert.deepEqual(candidates(), [0]);
+  h.receive({ msg: "ui-push", type: "describe-monster", title: "Adder", body: "rF: +..  rPois: .  rElec: ." });
+  assert.deepEqual(candidates(), [0, 1, 2]);
+  assert.equal(h.sent.length, 0);
+});
+test("gold and faith changes refresh advice state and changing god invalidates old abilities", () => {
+  const h = harness();
+  h.player.god = "Okawaru";
+  h.player.gold = 100;
+  h.tick();
+  h.setMode(7);
+  h.receive({ msg: "menu", tag: "ability", total_items: 2, items: [
+    { level: 2, text: "권능 -" },
+    { ...spell(), text: "a - Heroism    2 MP, Piety    3%" },
+  ] });
+  assert.equal(h.lastState().abilities.length, 1);
+  h.player.gold = 200;
+  h.player.piety_rank = 4;
+  h.player.penance = true;
+  h.tick();
+  assert.equal(h.lastState().gold, 200);
+  assert.equal(h.lastState().pietyRank, 4);
+  assert.equal(h.lastState().penance, true);
+  assert.equal(h.lastState().abilitiesLoaded, false);
+  assert.equal(h.lastState().abilities.length, 0);
+  h.player.god = "Gozag";
+  h.tick();
+  assert.equal(h.lastState().abilitiesLoaded, false);
+  assert.equal(h.lastState().abilities.length, 0);
+  assert.equal(h.sent.length, 0);
+});
 function spellMenu(h, key = 97) {
   h.setMode(7);
-  h.receive({ msg: "menu", tag: "spell", total_items: 1, items: [spell(key)] });
+  h.receive({ msg: "menu", tag: "spell", flags: KNOWN_SPELL_FLAGS, total_items: 1, items: [spell(key)] });
 }
 
 test("uses global game API and inventory slots over 51 without replacing native handling", () => {
@@ -257,6 +303,7 @@ test("refresh also supports a power view arriving first", () => {
   h.receive({
     msg: "menu",
     tag: "spell",
+    flags: KNOWN_SPELL_FLAGS,
     total_items: 1,
     items: [
       { ...spell(), text: "a - Magic Dart    32%    1d6    7    Silent" },
@@ -282,6 +329,42 @@ test("casting waits for prompt and live menu and resolves a changed spell letter
   assert.equal(h.sent.length, 2);
   spellMenu(h, 98);
   assert.equal(h.sent.at(-1).text, "b");
+});
+test("manual learning menus preserve the learned spell panel and the next cast uses its live server letter", () => {
+  const h = harness();
+  spellMenu(h, 122);
+  const before = Array.from(h.lastState().spells, (entry) => ({ ...entry }));
+  h.receive({ msg: "close_all_menus" });
+  h.receive({ msg: "menu", tag: "spell", flags: LIBRARY_FLAGS, title: "마법 (배우기)", total_items: 1,
+    items: [{ ...spell(), text: "a - Fireball    Conj/Fire    99%    5" }] });
+  h.receive({ msg: "update_menu", title: "마법 (설명)" });
+  h.receive({ msg: "update_menu_items", items: [spell(65)] });
+  assert.deepEqual(Array.from(h.lastState().spells, (entry) => ({ ...entry })), before);
+  assert.equal(h.sent.length, 0);
+  h.receive({ msg: "close_all_menus" });
+  h.setMode(1);
+  h.act({ type: "cast", id: "5:101" });
+  spellMenu(h, 66);
+  assert.deepEqual(h.sent, [{ type: "input", text: "z" }, { type: "input", text: "B" }]);
+});
+
+test("spell refresh, cast and description never toggle or select a same-tag library or unidentified menu", () => {
+  for (const type of ["refreshSpells", "cast", "describeSpell"])
+    for (const flags of [LIBRARY_FLAGS, undefined]) {
+      const h = harness();
+      spellMenu(h);
+      h.receive({ msg: "close_all_menus" });
+      h.setMode(1);
+      h.act({ type, id: "5:101" });
+      h.setMode(7);
+      h.receive({ msg: "menu", tag: "spell", flags, title: "Your spells (cast)", total_items: 1, items: [spell(98)] });
+      h.receive({ msg: "update_menu_items", items: [spell(99)] });
+      h.tick();
+      assert.equal(h.lastState().busy, false);
+      assert.equal(h.lastState().spells[0].letter, "a");
+      assert.deepEqual(h.sent, [{ type: "input", text: type === "cast" ? "z" : "I" }]);
+      assert.match(h.posted.filter((data) => data.type === "notice").at(-1).text, /단축키 목록/);
+    }
 });
 test("spell_menu enabled skips prompt and right click uses description menu", () => {
   const h = harness();

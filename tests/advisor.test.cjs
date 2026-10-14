@@ -129,9 +129,8 @@ test("empty wands, unidentified potions and resisted poison are not promoted as 
   );
   assert.deepEqual(
     result.candidates.map((c) => c.slot),
-    [61],
+    [],
   );
-  assert.equal(result.candidates[0].role, "회복");
 });
 test("skill snapshots parse English and Korean levels and influence available candidates", () => {
   const skills = Advisor.skillLevels([
@@ -196,4 +195,200 @@ test("item retrieval spells are excluded from monster combat candidates", () => 
     );
     assert.equal(report.candidates.length, 0);
   }
+});
+
+const fireball = (extra = {}) => ({
+  id: "fire", name: "Fireball", sourceId: "SPELL_FIREBALL", fail: 0,
+  level: 5, damage: "2d8", range: "7", ...extra,
+});
+const ability = (extra = {}) => ({
+  id: "power", name: "Divine fire", fail: 0, cost: "2 MP", combat: { damage: "2d8", range: "7" }, ...extra,
+});
+
+test("current range, minimum range and grouped distances determine target reach", () => {
+  const state = { ...normal, spells: [fireball({ range: "3/7" })] };
+  assert.equal(Advisor.advise(state, { ...monster, distance: 5 }).candidates.length, 0);
+  assert.equal(Advisor.advise(state, { ...monster, distance: 3 }).candidates.length, 1);
+  const ring = { ...normal, spells: [fireball({ range: "2-4" })] };
+  assert.equal(Advisor.advise(ring, { ...monster, distance: 1 }).candidates.length, 0);
+  const group = Advisor.advise(ring, { ...monster, distance: 1, distances: [1, 3], count: 2 });
+  assert.equal(group.candidates.length, 1);
+  assert.match(group.candidates[0].reason, /그룹 1\/2마리/);
+  const unknown = Advisor.advise({ ...normal, spells: [fireball({ range: null })] }, monster);
+  assert.equal(unknown.candidates.length, 1);
+  assert.match(unknown.candidates[0].reason, /사거리 미확인/);
+});
+
+test("numeric MP, HP and gold costs exclude unaffordable abilities in either language", () => {
+  const state = { ...normal, gold: 100, abilities: [
+    ability({ id: "mp", cost: "6 MP" }),
+    ability({ id: "hp", cost: "50 HP" }),
+    ability({ id: "gold", cost: "101 Gold" }),
+    ability({ id: "korean", cost: "마력: 6, 체력: 1" }),
+    ability({ id: "ok", cost: "5 MP, 49 HP, 100 Gold" }),
+  ] };
+  assert.deepEqual(Advisor.advise(state, monster).candidates.map((c) => c.id), ["ok"]);
+  assert.equal(Advisor.advise({ ...state, gold: 99 }, monster).candidates.length, 0);
+});
+
+test("malformed failure values, empty stacks, exhausted charges and disabled spells stay excluded", () => {
+  for (const fail of [null, "", "bad", NaN, -1, 36, 101]) {
+    const state = { ...normal, spells: [fireball({ fail })], abilities: [ability({ fail })] };
+    assert.equal(Advisor.advise(state, monster).candidates.length, 0, String(fail));
+  }
+  const items = [
+    { slot: 1, name: "javelins", category: "missile", action: "Fire", quantity: 0, combat: { rating: 20 } },
+    { slot: 2, name: "evoker", category: "evoke", action: "Evoke", charges: -1, combat: { damage: "3d8" } },
+  ];
+  assert.equal(Advisor.advise({ ...normal, items, spells: [fireball({ colour: 8 })] }, monster).candidates.length, 0);
+});
+
+test("known confusion and silence restrict targeted actions without adding recovery or escape items", () => {
+  const state = { ...normal, stats: { ...normal.stats, hp: 10 }, spells: [fireball()], items: [
+    { slot: 1, name: "heal wounds", category: "potion", action: "Quaff" },
+    { slot: 2, name: "a scroll of blinking", category: "scroll", action: "Read" },
+    { slot: 3, name: "a wand of flame", baseType: 3, category: "evoke", action: "Zap", charges: 3, combat: { damage: "2d8", range: "7" } },
+  ] };
+  const advise = (text) => Advisor.advise({ ...state, stats: { ...state.stats, status: [{ text }] } }, monster);
+  assert.deepEqual(advise("Silenced").candidates.map((c) => c.slot), [3]);
+  assert.deepEqual(advise("Confused").candidates.map((c) => c.slot), []);
+  assert.equal(advise("Paralysed").candidates.length, 0);
+  assert.equal(advise("Berserk").candidates.length, 0);
+  assert.ok(!advise("NoPotions").candidates.some((c) => c.slot === 1));
+});
+
+test("monster candidates contain direct attacks and control without escape, summons or unrelated magic", () => {
+  const spells = [
+    fireball(),
+    { id: "blink", name: "점멸", sourceId: "SPELL_BLINK", fail: 0, level: 2 },
+    { id: "passwall", name: "벽 통과", sourceId: "SPELL_PASSWALL", fail: 0, level: 3 },
+    { id: "summon", name: "Summon Ice Beast", sourceId: "SPELL_SUMMON_ICE_BEAST", fail: 0, level: 3 },
+    { id: "unknown", name: "Unknown utility", fail: 0, level: 1 },
+    { id: "apport", name: "Apportation", fail: 0, level: 1 },
+    { id: "fear", name: "Cause Fear", fail: 0, level: 4, power: "30%", range: "7" },
+  ];
+  const result = Advisor.advise({ ...normal, spells }, { ...monster, threat: 2, will: [0, 0] });
+  assert.equal(result.candidates[0].id, "fire");
+  const roles = Object.fromEntries(result.candidates.map((c) => [c.id, c.role]));
+  assert.equal(roles.blink, undefined);
+  assert.equal(roles.passwall, undefined);
+  assert.equal(roles.summon, undefined);
+  assert.equal(roles.fear, "제어");
+  assert.equal(roles.unknown, undefined);
+  assert.equal(roles.apport, undefined);
+  assert.deepEqual(result.candidates.map((c) => c.id), ["fire", "fear"]);
+});
+
+test("active buffs are not recommended repeatedly and renunciation stays absent", () => {
+  const state = { ...normal, stats: { ...normal.stats, status: [{ text: "Heroism Haste Finesse" }] },
+    abilities: [ability({ name: "Heroism", combat: null }), ability({ name: "Finesse", combat: null }), ability({ name: "신앙 포기", combat: null })],
+    items: [{ slot: 1, name: "a potion of haste", category: "potion", action: "Quaff" }],
+  };
+  assert.equal(Advisor.advise(state, { ...monster, threat: 2 }).candidates.length, 0);
+});
+
+test("zero direct damage is removed while physical damage survives poison immunity", () => {
+  const items = [
+    { slot: 1, name: "javelins", category: "missile", action: "Fire", combat: { rating: 8, range: "7" } },
+    { slot: 2, name: "curare darts", category: "missile", action: "Fire", combat: { rating: 0, range: "7" } },
+    { slot: 3, name: "throwing net", category: "missile", action: "Fire", combat: { rating: 0, range: "7" } },
+    { slot: 4, name: "javelins", category: "missile", action: "Fire", combat: { rating: 0, range: "7" } },
+    { slot: 5, name: "poisoned darts", category: "missile", action: "Fire", combat: { rating: 8, range: "7" } },
+  ];
+  const result = Advisor.advise({ ...normal, items, spells: [fireball({ damage: "0" })] }, { ...monster, resists: { poison: 3 } });
+  assert.deepEqual(result.candidates.map((c) => c.slot), [1, 3]);
+  assert.equal(result.candidates[0].totalDamage, 4);
+  assert.equal(result.candidates[1].role, "제어");
+  assert.equal(result.candidates[1].totalDamage, null);
+});
+
+test("dart ratings are not physical damage and both poison darts and curare are omitted against poison resistance", () => {
+  const state = { ...normal, items: [
+    { slot: 1, name: "poisoned darts", category: "missile", action: "Fire", combat: { rating: 8, range: "7" } },
+    { slot: 2, name: "curare darts", category: "missile", action: "Fire", combat: { rating: 8, range: "7" } },
+  ] };
+  const base = Advisor.advise(state, { ...monster, resists: { poison: 0 } });
+  assert.ok(base.candidates.every((c) => c.role === "제어" && c.totalDamage === null));
+  assert.equal(base.candidates.length, 2);
+  assert.deepEqual(Advisor.advise(state, { ...monster, resists: { poison: 1 } }).candidates.map((c) => c.slot), []);
+});
+
+test("English and Korean poison darts need confirmed susceptibility before being shown as effective", () => {
+  const names = [
+    "poisoned darts", "curare-tipped darts", "독다트", "독 다트", "독이 묻은 다트",
+    "쿠라레다트", "쿠라레 다트", "쿠라레 바늘", "독침",
+  ];
+  for (const name of names)
+    for (const rating of [undefined, 8]) {
+      const state = { ...normal, items: [{
+        slot: 1, name, category: "missile", action: "Fire", combat: { rating, range: "7" },
+      }] };
+      for (const text of ["rPois: +", "rPois: ++", "rPois: ∞", "rPois: inf", "Unidentified resistance"]) {
+        const report = Advisor.advise(state, { ...monster, resists: Advisor.resistances(text) });
+        assert.equal(report.candidates.length, 0, `${name}, ${rating}, ${text}`);
+      }
+      for (const text of ["rPois: .", "rPois: x"]) {
+        const report = Advisor.advise(state, { ...monster, resists: Advisor.resistances(text) });
+        assert.equal(report.candidates.length, 1, `${name}, ${rating}, ${text}`);
+        assert.equal(report.candidates[0].totalDamage, null);
+        assert.doesNotMatch(report.candidates[0].reason, /공격력 환산|공격력 비교/);
+      }
+    }
+  const fromDescription = { ...normal, items: [{
+    slot: 1, name: "다트", category: "missile", action: "Fire",
+    combat: { sourceName: "curare-tipped darts", rating: 8 },
+  }] };
+  assert.equal(Advisor.advise(fromDescription, { ...monster, resists: { poison: 1 } }).candidates.length, 0);
+
+  const physical = Advisor.advise({ ...normal, items: [{
+    slot: 2, name: "poisoned javelins", category: "missile", action: "Fire", combat: { rating: 8, range: "7" },
+  }] }, { ...monster, resists: { poison: 3 } });
+  assert.equal(physical.candidates.length, 1);
+  assert.equal(physical.candidates[0].totalDamage, 4);
+  assert.match(physical.candidates[0].reason, /물리 피해는 유지/);
+});
+
+test("blinking scrolls, healing, self buffs and summoning never enter a monster's effective action list", () => {
+  const items = [
+    ...["a scroll of blinking", "점멸의 두루마리", "a scroll of teleportation"].map((name, i) =>
+      ({ slot: i, name, category: "scroll", action: "Read" })),
+    ...["a potion of heal wounds", "a potion of curing", "a potion of haste"].map((name, i) =>
+      ({ slot: i + 3, name, category: "potion", action: "Quaff" })),
+    { slot: 6, name: "phantom mirror", category: "evoke", action: "Evoke" },
+    { slot: 7, name: "javelins", category: "missile", action: "Fire", combat: { rating: 8, range: "7" } },
+  ];
+  const abilities = ["Heroism", "Finesse", "Berserk", "Trog's Hand", "Purification", "Heal Wounds", "Draw Escape"]
+    .map((name) => ability({ id: name, name, combat: null }));
+  for (const hp of [10, 50])
+    for (const threat of [0, 3]) {
+      const report = Advisor.advise({
+        ...normal, stats: { ...normal.stats, hp }, items, abilities,
+        spells: [fireball(), { id: "blink", name: "Blink", fail: 0, level: 2 }],
+      }, { ...monster, threat });
+      assert.deepEqual(report.candidates.map((entry) => entry.name), ["Fireball", "javelins"]);
+      assert.ok(report.candidates.every((entry) => ["공격", "제어"].includes(entry.role)));
+    }
+});
+
+test("known invocations cannot reapply buffs under silence and unknown ability exceptions remain conditional", () => {
+  const state = { ...normal, stats: { ...normal.stats, status: [{ text: "Silenced" }] }, abilities: [
+    ability({ id: "hero", name: "Heroism", invocation: true, combat: null }),
+    ability({ id: "attack", invocation: true }),
+  ] };
+  const result = Advisor.advise(state, monster);
+  assert.deepEqual(result.candidates.map((c) => c.id), ["attack"]);
+  assert.equal(result.candidates[0].totalDamage, null);
+  assert.equal(result.candidates[0].known, false);
+  assert.match(result.candidates[0].reason, /사용 가능 여부 미확인/);
+});
+
+test("equal damage prefers verified reach and then lower MP without switching to DPS", () => {
+  const state = { ...normal, spells: [
+    fireball({ id: "costly", level: 5 }),
+    fireball({ id: "unknown", level: 1, range: null }),
+    { id: "cheap", name: "Magic Dart", sourceId: "SPELL_MAGIC_DART", damage: "3d5", level: 1, fail: 0, range: "7" },
+  ] };
+  const result = Advisor.advise(state, { ...monster, ac: 0, ev: 0, resists: { fire: 0 } });
+  assert.deepEqual(result.candidates.map((c) => c.id), ["cheap", "costly", "unknown"]);
+  assert.deepEqual(result.candidates.map((c) => c.totalDamage), [9, 9, 9]);
 });

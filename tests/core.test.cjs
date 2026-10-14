@@ -1,6 +1,8 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const Core = require("../extension/core.js");
+const KNOWN_SPELL_FLAGS = 0x40a52;
+const LIBRARY_FLAGS = 0xc0342;
 
 test("inventory includes trunk consumables beyond slot 51 and uses server letters", () => {
   const items = Core.inventory(
@@ -54,6 +56,7 @@ test("partial menu chunks are merged without sharing mutable client data", () =>
   tracker.receive({
     msg: "menu",
     tag: "spell",
+    flags: KNOWN_SPELL_FLAGS,
     total_items: 2,
     items: [first],
   });
@@ -79,6 +82,7 @@ test("nested and replacing menus preserve the parent and item updates", () => {
   tracker.receive({
     msg: "menu",
     tag: "spell",
+    flags: KNOWN_SPELL_FLAGS,
     total_items: 1,
     items: [{ level: 2, text: "a - Blink", hotkeys: [97] }],
   });
@@ -149,7 +153,7 @@ test("spell power is kept separate from failure across Korean partial updates", 
       text: " b + 수집                            전이                       56%       1",
     },
   ];
-  tracker.receive({ msg: "menu", tag: "spell", total_items: 2, items: rows });
+  tracker.receive({ msg: "menu", tag: "spell", flags: KNOWN_SPELL_FLAGS, total_items: 2, items: rows });
   tracker.receive({
     msg: "update_menu_items",
     items: [
@@ -176,6 +180,60 @@ test("spell power is kept separate from failure across Korean partial updates", 
   assert.equal(tracker.lastSpells[1].level, 1);
   tracker.receive({ msg: "update_menu_items", items: [rows[0]] });
   assert.equal(tracker.lastSpells[0].power, "0%");
+});
+test("known spell menus are identified by protocol flags independently of translated titles", () => {
+  for (const title of ["Your spells (cast)", "당신의 마법 (설명)", "未知の魔法", ""]) {
+    assert.equal(Core.isKnownSpellMenu({ tag: "spell", flags: KNOWN_SPELL_FLAGS, title }), true);
+    assert.equal(Core.isKnownSpellMenu({ tag: "spell", flags: LIBRARY_FLAGS, title }), false);
+  }
+  for (const flags of [undefined, null, "264786", 0, KNOWN_SPELL_FLAGS | 0x100])
+    assert.equal(Core.isKnownSpellMenu({ tag: "spell", flags, title: "Your spells (cast)" }), false);
+  assert.equal(Core.isKnownSpellMenu({ tag: "ability", flags: KNOWN_SPELL_FLAGS }), false);
+});
+
+test("memorisation, library descriptions and filtering cannot replace learned spells or their letters", () => {
+  const tracker = new Core.MenuTracker();
+  const known = {
+    level: 2, hotkeys: [122], tiles: [{ tex: 5, t: 100 }],
+    text: "z - Magic Dart    Conj    1%    1",
+  };
+  const libraryRows = [
+    { ...known, hotkeys: [97], text: "a - Magic Dart    Conj    45%    1" },
+    { level: 2, hotkeys: [98], text: "b - Fireball    Conj/Fire    99%    5" },
+  ];
+  tracker.receive({ msg: "menu", tag: "spell", flags: KNOWN_SPELL_FLAGS, total_items: 1, items: [known] });
+  tracker.receive({ msg: "update_menu_items", items: [{ ...known, text: "z - Magic Dart    20%    1d6    7    Silent" }] });
+  const snapshot = structuredClone(tracker.lastSpells);
+
+  for (const title of ["Spells (Memorise)", "마법 (배우기)", "마법 (설명)", "Spells (Hide)", "Spells (Show)"]) {
+    tracker.receive({ msg: "menu", tag: "spell", flags: LIBRARY_FLAGS, title, total_items: 2, items: [libraryRows[0]] });
+    tracker.receive({ msg: "update_menu_items", chunk_start: 1, items: [libraryRows[1]] });
+    tracker.receive({ msg: "update_menu", title: "Spells (Describe)", total_items: 1 });
+    tracker.receive({ msg: "update_menu_items", items: [libraryRows[1]] });
+    tracker.receive({ msg: "update_menu", total_items: 0 });
+    assert.equal(tracker.spellsLoaded, true);
+    assert.deepEqual(tracker.lastSpells, snapshot);
+    tracker.receive({ msg: "close_menu" });
+    assert.deepEqual(tracker.lastSpells, snapshot);
+  }
+
+  tracker.receive({ msg: "menu", replace: true, tag: "spell", flags: KNOWN_SPELL_FLAGS, total_items: 1,
+    items: [{ ...libraryRows[1], hotkeys: [65], text: "A - Fireball    Conj/Fire    12%    5" }] });
+  assert.deepEqual(tracker.lastSpells.map(({ name, letter, fail, power }) => [name, letter, fail, power]), [
+    ["Fireball", "A", "12", null],
+  ]);
+});
+
+test("a library or unidentified spell menu cannot initialise the learned spell cache", () => {
+  for (const flags of [LIBRARY_FLAGS, undefined]) {
+    const tracker = new Core.MenuTracker();
+    tracker.receive({ msg: "menu", tag: "spell", flags, total_items: 1,
+      items: [{ level: 2, hotkeys: [97], text: "a - Fireball    Conj/Fire    99%    5" }] });
+    assert.equal(tracker.spellsLoaded, false);
+    assert.deepEqual(tracker.lastSpells, []);
+    tracker.receive({ msg: "close_all_menus" });
+    assert.equal(tracker.spellsLoaded, false);
+  }
 });
 test("evocable inventory includes wands and miscellaneous devices", () => {
   assert.deepEqual(

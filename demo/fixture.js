@@ -292,6 +292,7 @@
         receive({
           msg: "menu",
           tag: "spell",
+          flags: 0x40a52,
           title: "Your spells",
           total_items: spellItems.length,
           chunk_start: 0,

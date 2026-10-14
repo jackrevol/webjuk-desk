@@ -131,11 +131,93 @@
       )
     )
       return "cold";
-    if (/poison|venom|sting|독\)|독성|독의|독 다트/i.test(name))
+    if (/poison|venom|sting|curare|쿠라레|독\)|독성|독의|독\s*다트|독침/i.test(name))
       return "poison";
     if (/lightning|shock|electric|번개|전격/i.test(name)) return "electricity";
     if (/acid|산성/i.test(name)) return "acid";
     if (/negative|draining|흡수|음에너지/i.test(name)) return "negative";
+    return null;
+  }
+  function failureRate(value) {
+    if (value == null || String(value).trim() === "") return null;
+    const n = Number(value);
+    return Number.isFinite(n) && n >= 0 && n <= 35 ? n : null;
+  }
+  function currentRange(value) {
+    const text = String(value ?? "").trim().replace(/[–−]/g, "-"),
+      match = text.match(/^(\d+)(?:\s*([/-])\s*(\d+))?$/);
+    if (!match) return null;
+    const min = match[2] === "-" ? +match[1] : 0,
+      max = match[2] === "-" ? +match[3] : +match[1];
+    // current/max 표기에서 분모는 잠재적 사거리이며 현재 도달 거리가 아닙니다.
+    return max > 0 && min <= max ? { min, max, text } : null;
+  }
+  function reach(item, monster) {
+    const range = currentRange(item.range ?? item.combat?.range),
+      distances = Array.isArray(monster.distances) && monster.distances.length
+        ? monster.distances : [monster.distance];
+    if (!range) return { known: false, reason: "사거리 미확인" };
+    if (!distances.every((d) => Number.isFinite(d) && d >= 0))
+      return { known: false, reason: `사거리 ${range.text} · 대상 거리 미확인` };
+    const count = distances.filter((d) => d >= range.min && d <= range.max).length;
+    return {
+      excluded: count === 0,
+      known: true,
+      reason: `현재 사거리 ${range.text} 충족${distances.length > 1 ? ` · 그룹 ${count}/${distances.length}마리` : ""}`,
+    };
+  }
+  function costs(item) {
+    const text = String(item.cost ?? item.text ?? ""), result = {};
+    for (const [key, names] of Object.entries({ mp: "MP|마력", hp: "HP|체력", gold: "Gold|gold|G|금화|골드" })) {
+      const values = [...text.matchAll(new RegExp(`(\\d+)\\s*(?:${names})(?![A-Za-z])|(?:${names})\\s*[:：]?\\s*(\\d+)`, "gi"))]
+        .map((m) => +(m[1] ?? m[2]));
+      if (values.length) result[key] = Math.max(...values);
+    }
+    return result;
+  }
+  function resources(state, item, kind) {
+    const cost = kind === "spell" ? { mp: item.level } : costs(item), p = state.stats || {};
+    if (cost.mp != null && (!Number.isFinite(p.mp) || cost.mp > p.mp)) return null;
+    if (cost.hp != null && (!Number.isFinite(p.hp) || cost.hp >= p.hp)) return null;
+    if (cost.gold != null && (!Number.isFinite(state.gold) || cost.gold > state.gold)) return null;
+    return cost;
+  }
+  function statusProfile(status) {
+    return {
+      blocked: /\b(?:paralys(?:ed|is)?|petrified|berserk)\b|마비|완전히\s*석화|광폭화(?!\s*불가)/i.test(status),
+      confused: /\b(?:conf|confused|confusion)\b|혼란/i.test(status),
+      silenced: /\b(?:sil|silence|silenced)\b|침묵/i.test(status),
+      noCasting: /\b(?:nocast|no\s+cast|no\s+spells)\b|마법\s*(?:사용|시전)\s*불가/i.test(status),
+    };
+  }
+  function canonicalName(item) {
+    return Combat.definition(item)?.name || item.combat?.sourceName || item.name || "";
+  }
+  function poisonDart(item) {
+    const name = `${item.name || ""} ${item.combat?.sourceName || ""}`;
+    return item.category === "missile" &&
+      /darts?|다트|바늘|독침/i.test(name) && /poison|venom|curare|쿠라레|독/i.test(name);
+  }
+  function combatRole(item, kind) {
+    const def = Combat.definition(item), flags = def?.flags || [], name = canonicalName(item),
+      damage = item.damage || item.combat?.damage,
+      damaging = typeof damage === "string" && damage.trim() && !/^(?:N\/A|—|0)$/i.test(damage.trim());
+    if (/^(?:Renounce Religion|신앙\s*포기)$/i.test(name.trim())) return null;
+    if (flags.includes("obj") || def?.flavour === "DIGGING") return null;
+    if (flags.includes("escape") || /^(?:Blink|Swiftness|Passwall|Passage of Golubria|점멸|신속|벽 통과)$/i.test(name)) return "이탈";
+    if (/^(?:Draw Escape|탈출 카드 뽑기)$/i.test(name)) return "이탈";
+    if (/heroism|finesse|berserk|trog.s hand|영웅|기교|광폭화|트로그의 손/i.test(name)) return "강화";
+    if (kind === "ability" && /^(?:Purification|Heal Wounds|정화|상처 치유)$/i.test(name)) return "치료";
+    if (/^(?:Summon\b|Call Canine Familiar|Animate Dead|소환|얼음 짐승 소환)/i.test(name) || /phantom mirror|유령.*거울/i.test(name)) return "소환";
+    if (kind === "spell" && (flags.includes("helpful") || flags.includes("selfench"))) return null;
+    if (item.category === "missile" && /throwing net|투척\s*그물/i.test(name)) return "제어";
+    if (item.category === "missile" && /darts?|다트|바늘|독침/i.test(name)) return "제어";
+    if (flags.includes("WL_check") && !damaging) return "제어";
+    if (def?.flavour === "MEPHITIC") return "제어";
+    if (damaging || item.combat?.rating > 0 || def?.defence || def?.components || flags.includes("destructive") || flags.includes("direct_damage_only")) return "공격";
+    if (kind === "item" && ["missile", "evoke"].includes(item.category)) return "공격";
+    if (def?.flavour && !["VISUAL", "HEALING"].includes(def.flavour)) return "공격";
+    if (kind === "ability" && /breathe|breath|smite|destruction|숨결|징벌|파괴/i.test(name)) return "공격";
     return null;
   }
   function advise(state, monster) {
@@ -178,6 +260,9 @@
     const status = (p.status || [])
       .map((s) => `${s.text || ""} ${s.light || ""}`)
       .join(" ");
+    const conditions = statusProfile(status);
+    if (conditions.confused) reasons.push("혼란: 마법·두루마리·표적 투척·발동 수단 제외");
+    if (conditions.silenced) reasons.push("침묵: 마법·두루마리 제외");
     if (/paralys|confus|petrif|held|마비|혼란|석화|구속/i.test(status)) {
       risk = 3;
       reasons.push("행동을 제한하는 상태 이상");
@@ -205,8 +290,10 @@
       reasons.push(
         `조회한 기술: 투척 ${state.skills?.throwing ?? "?"} / 발동 ${state.skills?.evocations ?? "?"} / 기도 ${state.skills?.invocations ?? "?"}`,
       );
+    if (conditions.blocked)
+      return { risk, label: labels[risk], reasons: [...reasons, "현재 상태로 대응 수단을 실행할 수 없음"], candidates: [] };
     const candidates = [];
-    function add(kind, item, role, score, why, totalDamage = null) {
+    function add(kind, item, role, score, why, totalDamage = null, known = true) {
       candidates.push({
         kind,
         id: item.id,
@@ -216,20 +303,31 @@
         role,
         score,
         totalDamage,
+        known,
+        mpCost: kind === "spell" ? item.level : costs(item).mp ?? 0,
         reason: why,
       });
     }
-    function attackCandidate(kind, item, score, why) {
-      const calculation = Combat.evaluate(state, item, monster, kind);
+    function attackCandidate(kind, item, role, score, why) {
+      // 독다트는 물리 공격력으로 독 저항을 우회하지 않습니다. 저항이 없다고
+      // 확인한 대상에만 추천하며, 저항 중에도 간헐적으로 통하는 독은 제외합니다.
+      if (poisonDart(item) && (!Number.isFinite(res.poison) || res.poison > 0)) return;
+      const distance = reach(item, monster);
+      if (distance.excluded) return;
+      const calculation = role === "제어" && item.category === "missile"
+        ? { reason: "투척물 부가 효과 · 직접 피해로 환산하지 않음" }
+        : Combat.evaluate(state, item, monster, kind);
       if (calculation.excluded) return;
+      if (role === "공격" && calculation.damageRange?.[1] === 0) return;
       if (calculation.score != null) score = calculation.score;
       else score = Math.min(score, 10);
-      why += ` · ${calculation.reason || "위력 미조회"}`;
+      why += ` · ${distance.reason} · ${calculation.reason || "위력 미조회"}`;
       const definition = Combat.definition(item),
-        type = definition ? null : element(item.name),
+        type = definition ? null : element(canonicalName(item)),
         resistance = type ? res[type] : undefined;
       // 원본 정의가 있는 공격의 저항·부분 면역은 Combat에서 타격별로 판정합니다.
-      if (resistance >= 3) return;
+      const physical = role === "공격" && item.category === "missile" && item.combat?.rating > 0;
+      if (resistance >= 3 && !physical) return;
       if (resistance > 0) {
         score -= 25;
         why += " · 해당 속성 저항 있음";
@@ -237,113 +335,89 @@
         score += 20;
         why += " · 해당 속성 약점";
       } else if (type && resistance === undefined) why += " · 속성 저항 미확인";
-      add(kind, item, "대응", score, why, calculation.totalDamage);
+      if (physical && resistance > 0) why += " · 물리 피해는 유지, 속성 부가 효과는 제한";
+      if (role === "제어" && !calculation.willChance) {
+        score = Math.min(score, 10);
+        why += " · 제어 성공률·대상 조건 미확인";
+      }
+      const polymorph = /polymorph|변신/i.test(canonicalName(item));
+      if (polymorph) {
+        why += " · 변신이 대상의 약화를 보장하지 않음";
+        score = Math.min(score, 10);
+      }
+      const stateUnknown = kind === "ability" && (conditions.confused || item.invocation && conditions.silenced);
+      if (stateUnknown) score = Math.min(score, 10);
+      const known = !polymorph && !stateUnknown && distance.known && (calculation.totalDamage != null || !!calculation.willChance);
+      add(kind, item, role, score, why, role === "공격" && !stateUnknown ? calculation.totalDamage : null, known);
     }
     for (const item of state.items || []) {
-      if (!item.action || item.useless) continue;
-      const name = item.name;
-      if (item.category === "potion") {
-        if (hp < 0.8 && /heal wounds|상처 (?:치료|치유)/i.test(name))
-          add("item", item, "회복", hp <= 0.35 ? 110 : 65, "현재 HP가 감소함");
-        else if (
-          (hp < 0.65 || /poison|중독/i.test(status)) &&
-          /curing|치료의 물약|회복의 물약/i.test(name)
-        )
-          add("item", item, "치료", 85, "HP 감소 또는 중독 상태");
-        else if (risk >= 2 && /haste|가속/i.test(name))
-          add("item", item, "가속", 75, "위험한 적 대응·이탈 준비");
-      } else if (item.category === "scroll") {
-        if (risk >= 2 && /blinking|점멸/i.test(name))
-          add("item", item, "이탈", 105, "점멸 위치는 직접 선택");
-        else if (risk >= 2 && /teleportation|순간이동/i.test(name))
-          add("item", item, "이탈", 90, "순간이동은 지연 후 발동");
-      } else if (item.category === "missile") {
+      if (!item.action || item.useless || Number.isFinite(item.quantity) && item.quantity <= 0) continue;
+      const role = combatRole(item, "item");
+      if (!["공격", "제어"].includes(role)) continue;
+      if (item.category === "missile") {
+        if (conditions.confused) continue;
         const throwing = state.skills?.throwing;
         attackCandidate(
           "item",
           item,
+          role,
           45 + Math.min(15, (throwing || 0) * 2),
           `투척 후보${throwing != null ? ` · 조회한 투척 기술 ${throwing}` : ""}`,
         );
-      } else if (item.category === "evoke" && item.charges !== 0) {
-        if (
-          Combat.definition(item)?.flags.includes("obj") ||
-          item.sourceId === "SPELL_DIG"
-        )
-          continue;
+      } else if (item.category === "evoke") {
+        if (conditions.confused || Number.isFinite(item.charges) && item.charges <= 0) continue;
         const evo = state.skills?.evocations;
         attackCandidate(
           "item",
           item,
+          role,
           50 + Math.min(15, (evo || 0) * 2),
           `발동 후보${evo != null ? ` · 조회한 발동 기술 ${evo}` : ""}`,
         );
       }
     }
     for (const spell of state.spells || []) {
-      // A low failure rate does not make item retrieval an attack option.
-      if (/^(?:Apportation|수집|마법의 수집)$/i.test(spell.name.trim()))
-        continue;
-      const def = Combat.definition(spell);
-      if (def?.flags.includes("helpful") || def?.flags.includes("obj"))
-        continue;
-      const failure = Number(spell.fail);
+      const failure = failureRate(spell.fail), role = combatRole(spell, "spell");
       if (
-        spell.fail == null ||
-        failure > 35 ||
-        spell.level == null ||
-        spell.level > (p.mp || 0)
+        !["공격", "제어"].includes(role) || failure == null || spell.colour === 8 ||
+        !Number.isInteger(spell.level) || spell.level < 1 ||
+        !resources(state, spell, "spell") ||
+        conditions.confused || conditions.silenced || conditions.noCasting
       )
         continue;
-      if (/blink|swiftness|점멸|신속/i.test(spell.name)) {
-        if (risk >= 2)
-          add(
-            "spell",
-            spell,
-            "이탈",
-            80 - failure,
-            "기본 MP 충족 · 실패율은 마지막 마법 목록 기준",
-          );
-      } else
-        attackCandidate(
-          "spell",
-          spell,
-          70 - failure,
-          `시전 후보 · 기본 MP ${spell.level} · 마지막 실패율 ${failure}%`,
-        );
+      attackCandidate(
+        "spell",
+        spell,
+        role,
+        70 - failure,
+        `시전 후보 · 기본 MP ${spell.level} · 마지막 실패율 ${failure}%`,
+      );
     }
     for (const ability of state.abilities || []) {
+      const failure = failureRate(ability.fail), role = combatRole(ability, "ability");
       if (
-        ability.colour === 8 ||
-        ability.fail == null ||
-        Number(ability.fail) > 35
+        ability.colour === 8 || failure == null || !["공격", "제어"].includes(role) ||
+        !resources(state, ability, "ability")
       )
         continue;
-      const cost = ability.text?.match(/(\d+)\s*MP/i);
-      if (cost && Number(cost[1]) > (p.mp || 0)) continue;
-      if (ability.combat?.damage) {
-        attackCandidate(
-          "ability",
-          ability,
-          60 - Number(ability.fail),
-          "공격 능력 · 서버 계산 피해량 기준",
-        );
-      } else if (
-        /breathe|breath|smite|destruction|heroism|finesse|숨결|징벌|파괴|영웅|기교/i.test(
-          ability.name,
-        )
-      )
-        add(
-          "ability",
-          ability,
-          "능력",
-          60 - Number(ability.fail),
-          "마지막 능력 목록 기준 · 신앙·자원 비용은 게임 메뉴에서 확인",
-        );
+      let why = "기본 자원 충족 · 마지막 능력 목록 기준 · 신앙·기타 비용은 원본 메뉴에서 확인";
+      if (conditions.confused || ability.invocation && conditions.silenced)
+        why += " · 현재 상태에서 능력 사용 가능 여부 미확인";
+      attackCandidate(
+        "ability",
+        ability,
+        role,
+        60 - failure,
+        why,
+      );
     }
     candidates.sort(
       (a, b) =>
-        (b.totalDamage ?? -1) - (a.totalDamage ?? -1) || b.score - a.score,
+        (b.totalDamage ?? -1) - (a.totalDamage ?? -1) ||
+        Number(b.known) - Number(a.known) ||
+        (a.totalDamage != null && b.totalDamage != null
+          ? a.mpCost - b.mpCost : 0) ||
+        b.score - a.score,
     );
     return {
       risk,

@@ -14,6 +14,7 @@
     abilityDetails = new Map();
   let combatJob = null,
     combatProfile = null,
+    lastFaithContext = null,
     describedItem = null;
   let skills = {},
     skillsLoaded = false,
@@ -62,14 +63,13 @@
       const entries = group.monsters;
       if (!entries?.length) return [];
       const mon = entries[0].mon;
-      const distance = Math.min(
-        ...entries.map((entry) =>
+      const distances = entries.map((entry) =>
           Math.max(
             Math.abs(entry.loc.x - (m.player?.pos?.x || 0)),
             Math.abs(entry.loc.y - (m.player?.pos?.y || 0)),
           ),
         ),
-      );
+        distance = Math.min(...distances);
       return [
         {
           row,
@@ -84,6 +84,7 @@
             return Advisor.healthBand(fg);
           }),
           distance,
+          distances,
           resists: monsterDetails.get(mon.id)?.resists || {},
           will: monsterDetails.get(mon.id)?.will || null,
           ac: monsterDetails.get(mon.id)?.ac || null,
@@ -135,6 +136,7 @@
     operation = null;
     combatJob = null;
     combatProfile = null;
+    lastFaithContext = null;
     itemDetails.clear();
     abilityDetails.clear();
     actionLockUntil = 0;
@@ -403,6 +405,12 @@
       notice("다른 메뉴가 열렸습니다. 게임 화면에서 확인하세요.", true);
       return;
     }
+    if (menu?.tag === "spell" && !Core.isKnownSpellMenu(menu)) {
+      operation = null;
+      combatJob = null;
+      notice("배운 마법의 단축키 목록이 아닙니다. 게임 화면을 확인하세요.", true);
+      return;
+    }
     if (menu?.tag === expectedTag && tracker.complete()) {
       if (operation.kind === "refresh") {
         const entries = Core.spells(menu);
@@ -499,6 +507,14 @@
     if (stopped) return;
     const m = modules();
     hook(m);
+    const faithContext = JSON.stringify([m.player?.god || "", m.player?.piety_rank, !!m.player?.penance]);
+    if (lastFaithContext !== null && lastFaithContext !== faithContext) {
+      tracker.lastAbilities = [];
+      tracker.abilitiesLoaded = false;
+      abilityDetails.clear();
+      spellRevision++;
+    }
+    lastFaithContext = faithContext;
     if (
       !operation &&
       m.game?.get_input_mode?.() === 1 &&
@@ -533,6 +549,12 @@
       m.player?.hp,
       m.player?.mp,
       m.player?.name,
+      m.player?.god,
+      m.player?.piety_rank,
+      m.player?.penance,
+      m.player?.gold,
+      m.player?.species,
+      m.player?.form,
       window.current_layer,
       !!document.querySelector("#ui-stack > .ui-popup"),
       Date.now() < actionLockUntil,

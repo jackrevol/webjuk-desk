@@ -117,6 +117,18 @@
         };
       });
   }
+  function isKnownSpellMenu(menu) {
+    // 시전(z/?)과 조회(I)는 같은 서버 단축키 표를 씁니다. 배우기·책 목록도
+    // spell 태그를 쓰므로 제목 번역 대신 menu.h의 동작 플래그로 구분합니다.
+    const required = 0x00002 | 0x00010 | 0x00800; // MF_SINGLESELECT | MF_ANYPRINTABLE | MF_NO_WRAP_ROWS
+    const library = 0x00100 | 0x80000; // MF_ALLOW_FILTER | MF_SHOW_EMPTY
+    return (
+      menu?.tag === "spell" &&
+      Number.isInteger(menu.flags) &&
+      (menu.flags & required) === required &&
+      !(menu.flags & library)
+    );
+  }
   class MenuTracker {
     constructor() {
       this.stack = [];
@@ -140,6 +152,7 @@
         if (data.replace) this.stack.pop();
         const menu = {
           tag: data.tag,
+          flags: data.flags,
           title: plain(data.title?.text ?? data.title),
           total: data.total_items ?? data.items?.length ?? 0,
           items: {},
@@ -178,7 +191,7 @@
       return !!this.top && Object.keys(this.top.items).length >= this.top.total;
     }
     capture() {
-      if (this.top?.tag === "spell" && this.complete()) {
+      if (isKnownSpellMenu(this.top) && this.complete()) {
         this.lastSpells = spells(this.top).map((spell) => {
           const previous = this.lastSpells.find(
             (entry) => entry.id === spell.id,
@@ -287,6 +300,7 @@
     letterForSlot,
     inventory,
     spells,
+    isKnownSpellMenu,
     spellIdentity,
     MenuTracker,
     chord,

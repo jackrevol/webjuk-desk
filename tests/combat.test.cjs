@@ -180,7 +180,7 @@ test("all eligible candidates remain available for the wrapped monster list", ()
   assert.equal(C.powerFromPercent({ name: "Magic Dart", power: "18%" }), null); // impossible after integer power rounding
 });
 
-test("candidate order uses total expected damage per use, not speed or utility priority", () => {
+test("candidate order uses total expected damage per use and omits recovery even at low HP", () => {
   const items = [
     {
       slot: 1,
@@ -209,7 +209,7 @@ test("candidate order uses total expected damage per use, not speed or utility p
   );
   assert.deepEqual(
     result.candidates.map((x) => x.slot),
-    [1, 2, 3],
+    [1, 2],
   );
   assert.equal(result.candidates[0].totalDamage, 55);
   assert.equal(result.candidates[1].totalDamage, 7);

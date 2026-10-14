@@ -1,6 +1,6 @@
 {
   "name": "webjuk-desk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Magic and inventory companion for DCSS WebTiles",
   "scripts": {
