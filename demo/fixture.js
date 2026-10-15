@@ -8,6 +8,11 @@
     menu = false;
   let powerView = false;
   let abilityExamine = false;
+  try {
+    saved = JSON.parse(localStorage.getItem("webjuk-demo") || "{}") || {};
+  } catch {
+    saved = {};
+  }
   window.chrome = {
     runtime: { getURL: (file) => `/extension/${file}` },
     storage: {
@@ -16,6 +21,7 @@
           return { webjuk: saved };
         },
         async set(value) {
+          localStorage.setItem("webjuk-demo", JSON.stringify(value.webjuk));
           const oldValue = saved;
           saved = value.webjuk;
           listeners.forEach((fn) =>
@@ -138,6 +144,7 @@
   ].map(([name, schools, fail, level], i) => ({
     level: 2,
     hotkeys: [97 + i],
+    tiles: [{ t: i, tex: 0 }],
     text: `${String.fromCharCode(97 + i)} - ${name.padEnd(30)}  ${schools.padEnd(14)}  ${fail}  ${level}`,
     colour: 7,
   }));
@@ -312,11 +319,17 @@
       total_items: 3,
       items: [
         { level: 2, text: "권능 -" },
-        { level: 2, text: "a - Heroism    2 MP, Piety    3%", hotkeys: [97] },
+        {
+          level: 2,
+          text: "a - Heroism    2 MP, Piety    3%",
+          hotkeys: [97],
+          tiles: [{ t: 6, tex: 0 }],
+        },
         {
           level: 2,
           text: "b - Divine fire    3 MP, Piety    5%",
           hotkeys: [98],
+          tiles: [{ t: 7, tex: 0 }],
         },
       ],
     });
@@ -341,6 +354,40 @@
     client: { in_game: () => true, is_watching: () => watching },
     "game-demo/game": { get_input_mode: () => mode, get_ui_state: () => 0 },
     "game-demo/player": player,
+  };
+  // 원본 서버 없이도 PNG 아이콘 생성·표시 경로를 확인하는 데모 타일입니다.
+  const demoTiles = [
+    ["#c9a5f2", ["00000100", "00001100", "00011110", "00111100", "01111000", "11110000", "01100000", "01000000"]],
+    ["#91d7ed", ["00000110", "00001100", "00011000", "00110000", "01100000", "11000000", "00000000", "00000000"]],
+    ["#e29ff2", ["00011000", "00111100", "01111110", "11111111", "01111110", "00111100", "00011000", "00000000"]],
+    ["#91a6ff", ["10011001", "01011010", "00111100", "11111111", "11111111", "00111100", "01011010", "10011001"]],
+    ["#b5a0ed", ["00111100", "01100110", "11000011", "11000011", "11000011", "11000011", "01100110", "00111100"]],
+    ["#f4a05c", ["00001000", "00011000", "00111010", "01111110", "01111111", "11111111", "01111110", "00111100"]],
+    ["#e9d58d", ["01111110", "01111110", "00111100", "00011000", "00011000", "00011000", "00111100", "01111110"]],
+    ["#ffe4a3", ["00011000", "01011010", "00111100", "11111111", "11111111", "00111100", "01011010", "00011000"]],
+  ];
+  modules["game-demo/tileinfo-main"] = {};
+  modules["game-demo/util"] = {
+    init_canvas(canvas, width, height) {
+      canvas.width = width;
+      canvas.height = height;
+    },
+  };
+  modules["game-demo/cell_renderer"] = {
+    DungeonCellRenderer: class {
+      init(canvas) {
+        this.context = canvas.getContext("2d");
+      }
+      draw_from_texture(tile) {
+        const [colour, pixels] = demoTiles[tile];
+        this.context.fillStyle = colour;
+        pixels.forEach((row, y) => {
+          [...row].forEach((pixel, x) => {
+            if (pixel === "1") this.context.fillRect(4 + x * 3, 4 + y * 3, 3, 3);
+          });
+        });
+      }
+    },
   };
   const monsterList = document.createElement("div");
   monsterList.id = "monster_list";

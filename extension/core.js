@@ -5,13 +5,14 @@
   else root.WebJukCore = api;
 })(globalThis, function () {
   "use strict";
+  const SECTIONS = Object.freeze(["faith", "spells", "missiles", "evokes"]);
   const DEFAULTS = Object.freeze({
     enabled: true,
     collapsed: false,
     focus: false,
+    closedSections: [],
     quickSlots: [],
     shortcuts: {
-      inventory: "Alt+KeyI",
       spells: "Alt+KeyM",
       missiles: "Alt+KeyT",
       evokes: "Alt+KeyE",
@@ -274,6 +275,13 @@
       enabled: value.enabled !== false,
       collapsed: !!value.collapsed,
       focus: !!value.focus,
+      closedSections: Array.isArray(value.closedSections)
+        ? [
+            ...new Set(
+              value.closedSections.filter((name) => SECTIONS.includes(name)),
+            ),
+          ]
+        : [],
       quickSlots: Array.isArray(value.quickSlots)
         ? value.quickSlots
             .filter(
@@ -295,6 +303,7 @@
     };
   }
   return {
+    SECTIONS,
     DEFAULTS,
     plain,
     letterForSlot,

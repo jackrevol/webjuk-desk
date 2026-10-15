@@ -7,8 +7,7 @@
     CHANNEL = "webjuk-desk-v1";
   let prefs = Core.settings(),
     state = { items: [], spells: [], ready: false };
-  const sections = ["faith", "spells", "missiles", "evokes", "items"];
-  const closedSections = new Set();
+  const sections = Core.SECTIONS;
   let recording = null,
     listSignature = "";
   let showSettings = false,
@@ -22,11 +21,11 @@
   shadow.append(sheet);
   const app = document.createElement("section");
   app.className = "native-panel";
-  app.setAttribute("aria-label", "신앙·마법·투척물·발동 아이템·소지품");
+  app.setAttribute("aria-label", "신앙·마법·투척물·발동 아이템");
   app.innerHTML = `
     <header class="panel-header">
       <button id="faith-heading" class="section-toggle" data-section="faith" aria-controls="faith-content" title="신앙 접기·펼치기 (Alt G)">신앙</button>
-      <span class="tab-spacer"></span><button class="tool" data-ui="religion" title="원본 신앙 정보" aria-label="원본 신앙 정보">◇</button><button class="tool" data-ui="abilities" title="신의 능력 목록 갱신" aria-label="신의 능력 목록 갱신">↻</button><button class="tool" data-ui="settings" title="확장 설정" aria-label="확장 설정">⚙</button>
+      <span class="faith-summary" aria-label="신앙 상태"></span><button class="tool" data-ui="religion" title="원본 신앙 정보" aria-label="원본 신앙 정보">◇</button><button class="tool" data-ui="abilities" title="신의 능력 목록 갱신" aria-label="신의 능력 목록 갱신">↻</button><button class="tool" data-ui="settings" title="확장 설정" aria-label="확장 설정">⚙</button>
       <button class="tool" data-ui="collapse" title="접기·펼치기 (Alt &#96;)" aria-label="패널 접기·펼치기">−</button>
     </header>
     <div class="body"><div class="quick-slots" aria-label="빠른 슬롯" hidden></div>
@@ -45,10 +44,6 @@
         <section class="inventory-section" data-pane="evokes" aria-labelledby="evokes-heading">
           <header class="panel-header"><button id="evokes-heading" class="section-toggle" data-section="evokes" aria-controls="evokes-content" title="발동 아이템 접기·펼치기 (Alt E)">발동</button></header>
           <div id="evokes-content" class="tiles" aria-label="발동 아이템 목록"></div>
-        </section>
-        <section class="inventory-section" data-pane="items" aria-labelledby="items-heading">
-          <header class="panel-header"><button id="items-heading" class="section-toggle" data-section="items" aria-controls="items-content" title="소지품 접기·펼치기 (Alt I)">소지품</button></header>
-          <div id="items-content" class="tiles" aria-label="소지품 목록"></div>
         </section>
       </div>
       <section class="settings" hidden aria-label="확장 설정">
@@ -240,15 +235,15 @@
           state.gold,
           state.penance,
         ),
-        summary = el("span", "faith-summary", faith.text);
+        summary = $(".faith-summary");
+      summary.textContent = faith.text;
       summary.title = faith.detail;
-      list.append(summary);
     }
     if (!state.connected || !state.inGame) {
       empty(
         list,
         "게임 연결을 기다리는 중",
-        "게임을 시작하면 소지품이 표시됩니다.",
+        "게임을 시작하면 패널이 표시됩니다.",
       );
       return;
     }
@@ -315,33 +310,24 @@
         "aria-disabled",
         String(!state.ready || !!state.busy),
       );
-      button.append(imageFor(item, kind), el("kbd", "letter", item.letter));
+      button.append(imageFor(item, kind));
       if (kind !== "item") {
-        cell.classList.add("spell-row");
-        const metrics = el("span", "spell-metrics");
+        cell.classList.add("spell-tile");
         const success = item.fail == null ? "—" : `${100 - Number(item.fail)}%`;
         const power =
           (kind === "ability" ? item.combat?.damage : item.power) ?? "—";
-        for (const [label, value] of [
-          ["성공률", success],
-          [kind === "ability" ? "피해" : "위력", power],
-        ]) {
-          const metric = el("span", "spell-metric");
-          metric.append(
-            el("span", "metric-label", label),
-            el("span", "metric-value", value),
-          );
-          metrics.append(metric);
-        }
-        const name = el("span", "spell-name", item.name);
-        if (kind === "ability" && item.cost)
-          name.append(el("span", "ability-cost", item.cost));
-        button.append(name, metrics);
+        const details = `${kind === "ability" && item.cost ? `비용 ${item.cost} · ` : ""}성공률 ${success} · ${kind === "ability" ? "피해" : "위력"} ${power}`;
+        const meta = el("span", "spell-meta");
+        const rate = el("span", "spell-success", success);
+        rate.title = `성공률: ${success} · 마지막 조회 기준`;
+        meta.append(el("kbd", "letter", item.letter), rate);
+        button.append(meta);
+        button.title = `${info}\n${details}${calculation.reason ? `\n${calculation.reason}` : ""}\n좌클릭: ${kind === "ability" ? "능력 사용" : "시전"} · 우클릭: 설명 · Shift+클릭: 슬롯 등록`;
         button.setAttribute(
           "aria-label",
-          `${item.name} ${kind === "ability" ? "능력 사용" : "시전"} · 성공률 ${success} · 위력 ${power}`,
+          `${item.name} ${kind === "ability" ? "능력 사용" : "시전"} · ${details}`,
         );
-      }
+      } else button.append(el("kbd", "letter", item.letter));
       if (item.quantity > 1 || item.charges != null)
         button.append(el("span", "quantity", item.charges ?? item.quantity));
       button.addEventListener("click", (event) =>
@@ -403,7 +389,6 @@
     node.replaceChildren();
     for (const [key, name] of [
       ["spells", "마법"],
-      ["inventory", "소지품"],
       ["missiles", "투척"],
       ["evokes", "발동"],
       ["faith", "신앙"],
@@ -537,7 +522,7 @@
     $(".body").hidden = prefs.collapsed;
     $("[data-ui=collapse]").textContent = prefs.collapsed ? "+" : "−";
     for (const button of $$("[data-section]")) {
-      const closed = closedSections.has(button.dataset.section);
+      const closed = prefs.closedSections.includes(button.dataset.section);
       button.setAttribute("aria-expanded", String(!closed && !prefs.collapsed));
       $(`#${button.dataset.section}-content`).hidden = closed;
       $(`[data-pane=${button.dataset.section}]`).classList.toggle(
@@ -558,10 +543,11 @@
     mount();
   }
   function focusSection(next) {
-    closedSections.delete(next);
     showSettings = false;
-    if (prefs.collapsed) setPrefs({ collapsed: false });
-    render();
+    setPrefs({
+      collapsed: false,
+      closedSections: prefs.closedSections.filter((name) => name !== next),
+    });
     $(`[data-section=${next}]`).focus();
   }
   app.addEventListener("click", async (event) => {
@@ -569,10 +555,12 @@
     if (!button) return;
     if (button.dataset.section) {
       const name = button.dataset.section;
-      if (closedSections.has(name)) closedSections.delete(name);
-      else closedSections.add(name);
-      if (prefs.collapsed) setPrefs({ collapsed: false });
-      render();
+      setPrefs({
+        collapsed: false,
+        closedSections: prefs.closedSections.includes(name)
+          ? prefs.closedSections.filter((section) => section !== name)
+          : [...prefs.closedSections, name],
+      });
       return;
     }
     if (button.dataset.command) {
@@ -702,7 +690,7 @@
       event.preventDefault();
       event.stopImmediatePropagation();
       if (name === "toggle") setPrefs({ collapsed: !prefs.collapsed });
-      else if (name) focusSection(name === "inventory" ? "items" : name);
+      else if (name) focusSection(name);
       else {
         const slot = prefs.quickSlots[Number(quick[1]) - 1];
         if (!slot) {

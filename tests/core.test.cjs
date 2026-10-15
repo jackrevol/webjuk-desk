@@ -137,6 +137,30 @@ test("shortcut normalization and composition guards", () => {
     "Alt+KeyE",
   );
 });
+
+test("panel state survives saved settings and drops removed sections and shortcuts", () => {
+  const saved = {
+    collapsed: true,
+    closedSections: ["spells", "faith", "spells", "items", null, "unknown"],
+    shortcuts: { inventory: "Alt+KeyI", spells: "Ctrl+KeyM" },
+    quickSlots: [{ kind: "item", id: "7:potion", name: "회복 물약" }],
+  };
+  const prefs = Core.settings(JSON.parse(JSON.stringify(saved)));
+  assert.equal(prefs.collapsed, true);
+  assert.deepEqual(prefs.closedSections, ["spells", "faith"]);
+  assert.equal(prefs.shortcuts.inventory, undefined);
+  assert.equal(prefs.shortcuts.spells, "Ctrl+KeyM");
+  assert.equal(prefs.quickSlots[0].name, "회복 물약");
+  assert.deepEqual(Core.settings({ ...prefs, focus: true }).closedSections, [
+    "spells", "faith",
+  ]);
+  assert.deepEqual(Core.settings({ closedSections: "spells" }).closedSections, []);
+  assert.deepEqual(Core.settings().closedSections, []);
+  assert.equal(Core.settings().collapsed, false);
+  assert.deepEqual(saved.closedSections, [
+    "spells", "faith", "spells", "items", null, "unknown",
+  ]);
+});
 test("spell power is kept separate from failure across Korean partial updates", () => {
   const tracker = new Core.MenuTracker();
   const rows = [
